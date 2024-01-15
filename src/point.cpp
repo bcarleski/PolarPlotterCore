@@ -41,19 +41,19 @@ Point::Point(float x, float y, float radius, float azimuth) {
   this->azimuth = azimuth;
 }
 
-float Point::getX() {
+float Point::getX() const {
   return this->x;
 }
 
-float Point::getY() {
+float Point::getY() const {
   return this->y;
 }
 
-float Point::getRadius() {
+float Point::getRadius() const {
   return this->radius;
 }
 
-float Point::getAzimuth() {
+float Point::getAzimuth() const {
   return this->azimuth;
 }
 

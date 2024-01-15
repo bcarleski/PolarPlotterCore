@@ -48,7 +48,7 @@ Step StepBank::getStep(unsigned int stepIndex) {
   return this->steps[stepIndex];
 }
 
-unsigned int StepBank::getStepCount() {
+unsigned int StepBank::getStepCount() const {
   return this->stepCount;
 }
 

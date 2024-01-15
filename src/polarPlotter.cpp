@@ -34,7 +34,7 @@ PolarPlotter::PolarPlotter(CondOut &condOut, float maxRadius, float radiusStepSi
 {
 }
 
-void PolarPlotter::onStep(void stepper(int radiusSteps, int azimuthSteps)) {
+void PolarPlotter::onStep(void stepper(const Step& step)) {
   this->stepper = stepper;
 }
 
@@ -63,6 +63,7 @@ void PolarPlotter::computeSteps(String &command)
   switch (command.charAt(0))
   {
   case 'l':
+  case 'L':
     setFinishPoint(command);
     this->lineStepCalculator.addLineSteps(this->position, this->finish, this->steps);
     break;
@@ -76,6 +77,8 @@ void PolarPlotter::computeSteps(String &command)
 
   if (this->debugLevel >= 1)
   {
+    this->condOut.print(" STEPS - ");
+    this->condOut.println(this->getStepCount());
     this->condOut.print(" DURATION - ");
     this->condOut.println(duration);
   }
@@ -200,8 +203,7 @@ bool PolarPlotter::step()
 
     if (this->debugLevel >= 1)
     {
-      this->condOut.print(" STEPPING DURATION - ");
-      this->condOut.println(duration);
+      this->condOut.println(String(" STEPPING COMPLETE, Step=") + this->getStepCount() + ", Duration=" + duration);
     }
 
     this->position.cloneFrom(this->finish);
@@ -227,20 +229,24 @@ bool PolarPlotter::step()
   if (newRadius >= this->maxRadius)
   {
     radiusStep = 0;
+    step.setSteps(radiusStep, azimuthStep);
   }
 
-  this->condOut.print("STEP: ");
-  this->condOut.print(radiusStep);
-  this->condOut.print(",");
-  this->condOut.println(azimuthStep);
-  // if (radiusStep != 0 || azimuthStep != 0)
-  // {
-  //   this->stepper(radiusStep, azimuthStep);
-  // }
+  if (this->debugLevel >= 3)
+  {
+    this->condOut.print("STEP: ");
+    this->condOut.print(radiusStep);
+    this->condOut.print(",");
+    this->condOut.println(azimuthStep);
+  }
+  if (radiusStep != 0 || azimuthStep != 0)
+  {
+    this->stepper(step);
+  }
   this->position.repoint(newRadius, newAzimuth);
   this->stepIndex++;
 
-  if (this->debugLevel >= 2)
+  if (this->debugLevel >= 4)
   {
     pos = this->position;
     this->condOut.print(" Position", pos);
@@ -262,12 +268,12 @@ bool PolarPlotter::step()
   return true;
 }
 
-unsigned int PolarPlotter::getStepCount()
+unsigned int PolarPlotter::getStepCount() const
 {
   return this->steps.getStepCount();
 }
 
-Point PolarPlotter::getPosition()
+Point PolarPlotter::getPosition() const
 {
   return this->position;
 }

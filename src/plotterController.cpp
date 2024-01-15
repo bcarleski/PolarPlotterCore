@@ -47,21 +47,21 @@ void PlotterController::onMqttPoll(bool pollMqtt(String[])) {
 
 void PlotterController::performCycle() {
   if (Serial && Serial.available()) {
-    String original = Serial.readStringUntil('\n');
-    String command =  (" " + original).substring(1);
-    command.toLowerCase();
+    String command = Serial.readStringUntil('\n');
 
-    if (command.startsWith("d")) {
+    if (command.startsWith("d") || command.startsWith("D")) {
       unsigned int debugLevel = (unsigned int)command.substring(1).toInt();
       this->plotter.setDebug(debugLevel);
-    } else if (command == "w") {
+    } else if (command.startsWith("h") || command.startsWith("H")) {
+      Serial.println(PolarPlotter::getHelpMessage());
+    } else if (command == "w" || command == "W") {
       this->plotter.executeWipe();
-    } else if (command.startsWith("ra")) {
-      this->messageReceived(getAcceptedTopic, original.substring(2));
-    } else if (command.startsWith("rr")) {
-      this->messageReceived(getRejectedTopic, original.substring(2));
-    } else if (command.startsWith("rt")) {
-      this->messageReceived(toDeviceTopic, original.substring(2));
+    } else if (command.startsWith("ra") || command.startsWith("RA")) {
+      this->messageReceived(getAcceptedTopic, command.substring(2));
+    } else if (command.startsWith("rr") || command.startsWith("RR")) {
+      this->messageReceived(getRejectedTopic, command.substring(2));
+    } else if (command.startsWith("rt") || command.startsWith("RT")) {
+      this->messageReceived(toDeviceTopic, command.substring(2));
     } else {
       this->plotter.computeSteps(command);
       this->hasSteps = this->plotter.getStepCount() > 0;
@@ -88,7 +88,7 @@ void PlotterController::performCycle() {
     return;
   }
 
-  if (this->currentDrawing == "" || this->currentLine >= this->totalLines) {
+  if (this->currentDrawing == "" || this->currentLine >= (this->totalLines - 1)) {
     this->requestDrawing();
   } else {
     this->requestLine();

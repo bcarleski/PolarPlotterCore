@@ -40,7 +40,7 @@ public:
   StepBank(CondOut& condOut);
   void addStep(int radiusStep, int azimuthStep);
   Step getStep(unsigned int stepIndex);
-  unsigned int getStepCount();
+  unsigned int getStepCount() const;
   void reset();
   void setDebug(unsigned int level);
 };

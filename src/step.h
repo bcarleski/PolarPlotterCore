@@ -32,8 +32,8 @@ class Step {
   public:
     Step();
     void setSteps(int radiusStep, int azimuthStep);
-    int getRadiusStep();
-    int getAzimuthStep();
+    int getRadiusStep() const;
+    int getAzimuthStep() const;
 };
 
 #endif

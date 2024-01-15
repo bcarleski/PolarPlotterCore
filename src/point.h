@@ -36,10 +36,10 @@ class Point {
     Point();
     Point(float radius, float azimuth);
     Point(float x, float y, float radius, float azimuth);
-    float getX();
-    float getY();
-    float getRadius();
-    float getAzimuth();
+    float getX() const;
+    float getY() const;
+    float getRadius() const;
+    float getAzimuth() const;
     void repoint(float radius, float azimuth);
     void cartesianRepoint(float x, float y);
     void cloneFrom(Point& other);

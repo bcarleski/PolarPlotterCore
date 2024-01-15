@@ -49,7 +49,7 @@ void Step::setSteps(int radiusStep, int azimuthStep) {
   this->state = state;
 }
 
-int Step::getRadiusStep() {
+int Step::getRadiusStep() const {
   if (this->state & RADIUS_STEP_POSITIVE) {
     return 1;
   }
@@ -61,7 +61,7 @@ int Step::getRadiusStep() {
   return 0;
 }
 
-int Step::getAzimuthStep() {
+int Step::getAzimuthStep() const {
   if (this->state & AZIMUTH_STEP_POSITIVE) {
     return 1;
   }
