@@ -34,11 +34,8 @@ PolarPlotter::PolarPlotter(CondOut &condOut, float maxRadius, float radiusStepSi
 {
 }
 
-void PolarPlotter::onRadiusStep(void step(int numberOfSteps)) {
-  this->radiusStepper = step;
-}
-void PolarPlotter::onAzimuthStep(void step(int numberOfSteps)) {
-  this->azimuthStepper = step;
+void PolarPlotter::onStep(void stepper(int radiusSteps, int azimuthSteps)) {
+  this->stepper = stepper;
 }
 
 void PolarPlotter::init(float startingRadius, float startingAzimuth)
@@ -168,12 +165,12 @@ void PolarPlotter::executeWipe()
   this->executeRadiusSteps(ceil(radiusSteps));
   this->executeFullCircleSteps();
 
-  int stepChunks = floor(radiusSteps / MARBLE_SIZE_IN_RADIUS_STEPS);
-  int remainder = ceil(radiusSteps - (stepChunks * MARBLE_SIZE_IN_RADIUS_STEPS));
+  int stepChunks = floor(radiusSteps / marbleSizeInRadiusSteps);
+  int remainder = ceil(radiusSteps - (stepChunks * marbleSizeInRadiusSteps));
 
   for (int i = 0; i < stepChunks; i++)
   {
-    for (int j = 0; j < MARBLE_SIZE_IN_RADIUS_STEPS; j++)
+    for (int j = 0; j < marbleSizeInRadiusSteps; j++)
     {
       this->steps.addStep(-1, 0);
     }
@@ -236,13 +233,9 @@ bool PolarPlotter::step()
   this->condOut.print(radiusStep);
   this->condOut.print(",");
   this->condOut.println(azimuthStep);
-  if (radiusStep != 0)
+  if (radiusStep != 0 || azimuthStep != 0)
   {
-    this->radiusStepper(radiusStep);
-  }
-  if (azimuthStep != 0)
-  {
-    this->azimuthStepper(azimuthStep);
+    this->stepper(radiusStep, azimuthStep);
   }
   this->position.repoint(newRadius, newAzimuth);
   this->stepIndex++;

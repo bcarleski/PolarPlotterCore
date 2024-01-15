@@ -44,11 +44,11 @@ private:
   void showLine(Point& start, Point& finish, int radiusSteps, int azimuthSteps, float radiusStepOffset, float azimuthStepOffset, float xDelta, float yDelta, float distanceDenominator);
   void showPoints(Point& kpMinIncMajP, Point& incMinIncMajP, Point& incMinKpMajP, Point& decMinIncMajP, Point& decMinKpMajP);
   void showDistances(String prefix, String distanceToWhere, float kpMinIncMajDist, float incMinIncMajDist, float incMinKpMajDist, float decMinIncMajDist, float decMinKpMajDist);
-  void showLastDistanceAndSteps(float lastDist, int minorStep, int majorStep):
-  void addStep(StepBank& steps, float radiusStepOffset, int radiusStepIncrement, float azimuthStepOffset, int azimuthStepIncrement):
-  int getStepValue(float offset, int increment):
-  float findDistanceToFinish(Point& finish, Point& point):
-  float findDistanceFromLine(Point& start, Point& point, float xDelta, float yDelta, float distanceDenominator):
+  void showLastDistanceAndSteps(float lastDist, int minorStep, int majorStep);
+  void addStep(StepBank& steps, float radiusStepOffset, int radiusStepIncrement, float azimuthStepOffset, int azimuthStepIncrement);
+  int getStepValue(float offset, int increment);
+  float findDistanceToFinish(Point& finish, Point& point);
+  float findDistanceFromLine(Point& start, Point& point, float xDelta, float yDelta, float distanceDenominator);
   void orientEndPoint(Point& start, Point& end);
 
 public:

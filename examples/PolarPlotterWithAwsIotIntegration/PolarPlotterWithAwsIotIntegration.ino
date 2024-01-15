@@ -25,12 +25,6 @@ Stepper radiusStepper(RADIUS_STEPPER_STEPS_PER_ROTATION, RADIUS_STEPPER_STEP_PIN
 Stepper azimuthStepper(AZIMUTH_STEPPER_STEPS_PER_ROTATION, AZIMUTH_STEPPER_STEP_PIN, AZIMUTH_STEPPER_DIR_PIN);
 PolarPlotter plotter(condOut, MAX_RADIUS, RADIUS_STEP_SIZE, AZIMUTH_STEP_SIZE, MARBLE_SIZE_IN_RADIUS_STEPS);
 PlotterController controller(plotter, IOT_DEVICE_NAME, IOT_DEVICE_SHADOW_NAME);
-bool hasSteps = false;
-bool hasRequestedNewDrawing = false;
-bool hasRequestedNextLine = false;
-String currentDrawing = "";
-int currentLine;
-int totalLines;
 
 void setup() {
   condOut.init();
@@ -41,8 +35,7 @@ void setup() {
   controller.onMqttPoll(pollMqtt);
   radiusStepper.setSpeed(RADIUS_RPMS);
   azimuthStepper.setSpeed(AZIMUTH_RPMS);
-  plotter.onRadiusStep(radiusStepper.step);
-  plotter.onAzimuthStep(azimuthStepper.step);
+  plotter.onStep(performStep);
 
 #if USE_CLOUD > 0
   if (!ECCX08.begin()) {
@@ -99,6 +92,11 @@ bool pollMqtt(String topics[]) {
 #endif
 
   return false;
+}
+
+void performStep(int radiusSteps, int azimuthSteps) {
+  radiusStepper.step(radiusSteps);
+  azimuthStepper.step(azimuthSteps);
 }
 
 void publishMessage(const String& topic, const JSONVar& payload) {
