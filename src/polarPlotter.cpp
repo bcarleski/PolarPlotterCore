@@ -157,7 +157,7 @@ void PolarPlotter::executeWipe()
   this->stepIndex = 0;
   this->steps.reset();
 
-  this->condOut.print(" WIPING");
+  this->condOut.println(" WIPING");
   this->condOut.lcdPrint("WIPING", "");
 
   float radiusSteps = this->maxRadius / this->radiusStepSize;
