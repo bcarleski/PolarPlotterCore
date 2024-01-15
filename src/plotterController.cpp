@@ -47,7 +47,8 @@ void PlotterController::onMqttPoll(bool pollMqtt(String[])) {
 
 void PlotterController::performCycle() {
   if (Serial && Serial.available()) {
-    String command = Serial.readStringUntil('\n');
+    String original = Serial.readStringUntil('\n');
+    String command =  (" " + original).substring(1);
     command.toLowerCase();
 
     if (command.startsWith("d")) {
@@ -55,6 +56,12 @@ void PlotterController::performCycle() {
       this->plotter.setDebug(debugLevel);
     } else if (command == "w") {
       this->plotter.executeWipe();
+    } else if (command.startsWith("ra")) {
+      this->messageReceived(getAcceptedTopic, original.substring(2));
+    } else if (command.startsWith("rr")) {
+      this->messageReceived(getRejectedTopic, original.substring(2));
+    } else if (command.startsWith("rt")) {
+      this->messageReceived(toDeviceTopic, original.substring(2));
     } else {
       this->plotter.computeSteps(command);
       this->hasSteps = this->plotter.getStepCount() > 0;
@@ -184,8 +191,8 @@ void PlotterController::toDeviceMessage(const String& message) {
 
         this->currentDrawing = drawing;
         this->totalLines = totalLines;
-        this->currentLine = 1;
         this->plotter.executeWipe();
+        this->currentLine = 0;
       }
 
       if (json.hasOwnProperty("drawing") && json.hasOwnProperty("line")) {
@@ -207,7 +214,25 @@ void PlotterController::toDeviceMessage(const String& message) {
 
       this->reportState();
       handled = true;
+    } else if (type == "drawing") {
+      if (!this->waitingForDrawing) {
+        reportError("Unexpected drawing message", message); handled = true;
+      } else if (!json.hasOwnProperty("drawing")) {
+        reportError("Missing drawing element in drawing message", message); handled = true;
+      } else if (!json.hasOwnProperty("totalLines")) {
+        reportError("Missing totalLines element in drawing message", message); handled = true;
+      }
+    } else if (type == "line") {
+      if (!this->waitingForLine) {
+        reportError("Unexpected line message", message); handled = true;
+      } else if (!json.hasOwnProperty("command")) {
+        reportError("Missing command element in line message", message); handled = true;
+      }
+    } else {
+      reportError("Missing type", message); handled = true;
     }
+  } else {
+    reportError("Unknown type", message); handled = true;
   }
 
   if (!handled) {
@@ -244,4 +269,9 @@ void PlotterController::reportError(const String& type, const String& message) {
   msg["line"] = this->currentLine;
 
   this->publishMessage(this->fromDeviceTopic, msg);
+}
+
+void PlotterController::simulateMessageReceived(const char topic[], const String& message) {
+  const String tp = String(topic);
+  this->messageReceived(topic, message);
 }

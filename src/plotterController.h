@@ -57,6 +57,7 @@ class PlotterController {
     void toDeviceMessage(const String&);
     void reportState();
     void reportError(const String&, const String&);
+    void simulateMessageReceived(const char topic[], const String& message);
 
   public:
     PlotterController(PolarPlotter&, const String&, const String&);

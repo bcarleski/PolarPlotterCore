@@ -191,7 +191,7 @@ bool PolarPlotter::step()
 {
   if (this->stepIndex < 0 || this->stepIndex >= this->steps.getStepCount())
   {
-    unsigned long endMillis = micros();
+    unsigned long endMillis = millis();
     long duration = endMillis - this->stepStartMillis;
     this->condOut.setCursor(8, 1);
     this->condOut.lcdPrint("S:");
@@ -210,7 +210,7 @@ bool PolarPlotter::step()
 
   if (this->stepStartMillis == 0)
   {
-    this->stepStartMillis = micros();
+    this->stepStartMillis = millis();
   }
 
   Step step = steps.getStep(this->stepIndex);
@@ -233,10 +233,10 @@ bool PolarPlotter::step()
   this->condOut.print(radiusStep);
   this->condOut.print(",");
   this->condOut.println(azimuthStep);
-  if (radiusStep != 0 || azimuthStep != 0)
-  {
-    this->stepper(radiusStep, azimuthStep);
-  }
+  // if (radiusStep != 0 || azimuthStep != 0)
+  // {
+  //   this->stepper(radiusStep, azimuthStep);
+  // }
   this->position.repoint(newRadius, newAzimuth);
   this->stepIndex++;
 
@@ -289,5 +289,8 @@ String PolarPlotter::getHelpMessage()
   return "help       This help message\n"
          "W          Wipe any existing drawing\n"
          "L{X},{Y}   Draw a line from the origin to the cartesian point (X,Y)\n"
-         "D{#}       Set the debug level between 0-9 (0-Off, 9-Most Verbose)";
+         "D{#}       Set the debug level between 0-9 (0-Off, 9-Most Verbose)\n"
+         "RA{JSON}   Simulate having received the given JSON message on the get/accepted topic\n"
+         "RR{JSON}   Simulate having received the given JSON message on the get/rejected topic\n"
+         "RT{JSON}   Simulate having received the given JSON message on the toDevice topic";
 }
