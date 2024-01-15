@@ -52,13 +52,9 @@ void PolarPlotter::computeSteps(String &command)
 
   if (this->debugLevel >= 1)
   {
-    this->condOut.print(" COMMAND - ");
-    this->condOut.println(command);
+    this->condOut.println(" COMMAND - " + command);
   }
-
-  this->condOut.clear();
-  this->condOut.setCursor(0, 0);
-  this->condOut.lcdPrint(command);
+  this->condOut.lcdPrint("Got Command:", command);
 
   switch (command.charAt(0))
   {
@@ -160,7 +156,10 @@ void PolarPlotter::executeWipe()
   this->stepIndex = 0;
   this->steps.reset();
 
-  this->condOut.println(" WIPING");
+  if (this->debugLevel >= 1)
+  {
+    this->condOut.println(" WIPING");
+  }
   this->condOut.lcdPrint("WIPING", "");
 
   float radiusSteps = this->maxRadius / this->radiusStepSize;
@@ -239,10 +238,12 @@ bool PolarPlotter::step()
     this->condOut.print(",");
     this->condOut.println(azimuthStep);
   }
-  if (radiusStep != 0 || azimuthStep != 0)
-  {
-    this->stepper(step);
-  }
+  // if (radiusStep != 0 || azimuthStep != 0)
+  // {
+  //   Serial.println("Before Step");
+  //   this->stepper(step);
+  //   Serial.println("After Step");
+  // }
   this->position.repoint(newRadius, newAzimuth);
   this->stepIndex++;
 
