@@ -66,6 +66,8 @@ public:
   void lcdPrint(long, int = DEC);
   void lcdPrint(const char[], String&);
   void lcdPrint(const char[], const char[]);
+  void lcdPrint(String&, const char[]);
+  void lcdPrint(String&, String&);
   void lcdSave();
   void lcdPrintSaved();
 };

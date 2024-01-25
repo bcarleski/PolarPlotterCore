@@ -197,19 +197,22 @@ bool PolarPlotter::step()
 bool PolarPlotter::executeStep(const bool fastStep) {
   if (this->stepIndex < 0 || this->stepIndex >= this->steps.getStepCount())
   {
-    unsigned long endMillis = millis();
-    long duration = endMillis - this->stepStartMillis;
-    this->stepStartMillis = 0;
+    if (this->stepStartMillis > 0) {
+      if (this->debugLevel >= 1)
+      {
+        unsigned long endMillis = millis();
+        long duration = endMillis - this->stepStartMillis;
 
-    if (this->debugLevel >= 1)
-    {
-      this->condOut.setCursor(8, 1);
-      this->condOut.lcdPrint("S:");
-      this->condOut.lcdPrint(duration);
-      this->condOut.println(String(" STEPPING COMPLETE, Step=") + this->getStepCount() + ", Duration=" + duration);
+        this->condOut.setCursor(8, 1);
+        this->condOut.lcdPrint("S:");
+        this->condOut.lcdPrint(duration);
+        this->condOut.println(String(" STEPPING COMPLETE, Step=") + this->getStepCount() + ", Duration=" + duration);
+      }
+
+      this->stepStartMillis = 0;
+      this->position.cloneFrom(this->finish);
     }
 
-    this->position.cloneFrom(this->finish);
     return false;
   }
 

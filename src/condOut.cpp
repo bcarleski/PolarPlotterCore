@@ -177,12 +177,6 @@ void CondOut::setCursor(int col, int row) {
 
 void CondOut::lcdPrint(String& value) {
   if (useLcd) {
-    lcd.print(value);
-  }
-}
-
-void CondOut::lcdPrint(const char value[]) {
-  if (useLcd) {
     String val = value;
     if (val.length() > 16) {
       val = val.substring(0, 16);
@@ -192,6 +186,11 @@ void CondOut::lcdPrint(const char value[]) {
   }
 }
 
+void CondOut::lcdPrint(const char value[]) {
+  String val = value;
+  this->lcdPrint(val);
+}
+
 void CondOut::lcdPrint(long value, int base) {
   if (useLcd) {
     lcd.print(value, base);
@@ -199,10 +198,22 @@ void CondOut::lcdPrint(long value, int base) {
 }
 
 void CondOut::lcdPrint(const char line1[], String& line2) {
-  this->lcdPrint(line1, line2.c_str());
+  String l1 = line1;
+  this->lcdPrint(l1, line2);
 }
 
 void CondOut::lcdPrint(const char line1[], const char line2[]) {
+  String l1 = line1;
+  String l2 = line2;
+  this->lcdPrint(l1, l2);
+}
+
+void CondOut::lcdPrint(String& line1, const char line2[]) {
+  String l2 = line2;
+  this->lcdPrint(line1, l2);
+}
+
+void CondOut::lcdPrint(String& line1, String& line2) {
   if (useLcd) {
     lcd.clear();
     lcd.setCursor(0, 0);
