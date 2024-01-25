@@ -32,6 +32,9 @@ class CondOut {
 private:
   LiquidCrystal lcd;
   const bool useLcd;
+  String lastLine1;
+  String lastLine2;
+  bool preserveLastLines;
 
 public:
   CondOut(LiquidCrystal&, bool);
@@ -63,6 +66,8 @@ public:
   void lcdPrint(long, int = DEC);
   void lcdPrint(const char[], String&);
   void lcdPrint(const char[], const char[]);
+  void lcdSave();
+  void lcdPrintSaved();
 };
 
 #endif

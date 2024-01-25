@@ -23,8 +23,9 @@
 
 #include "plotterController.h"
 
-PlotterController::PlotterController(PolarPlotter& plotter, const String& deviceName, const String& shadowName)
-  : plotter(plotter),
+PlotterController::PlotterController(CondOut& condOut, PolarPlotter& plotter)
+  : condOut(condOut),
+    plotter(plotter),
     getTopic("$aws/things/" + deviceName + "/shadow/name/" + shadowName + "/get"),
     getAcceptedTopic("$aws/things/" + deviceName + "/shadow/name/" + shadowName + "/get/accepted"),
     getRejectedTopic("$aws/things/" + deviceName + "/shadow/name/" + shadowName + "/get/rejected"),
@@ -49,12 +50,15 @@ void PlotterController::performCycle() {
   if (Serial && Serial.available()) {
     String command = Serial.readStringUntil('\n');
 
+    Serial.println("Got: " + command);
     if (command.startsWith("d") || command.startsWith("D")) {
       unsigned int debugLevel = (unsigned int)command.substring(1).toInt();
       this->plotter.setDebug(debugLevel);
     } else if (command.startsWith("h") || command.startsWith("H")) {
       Serial.println(PolarPlotter::getHelpMessage());
     } else if (command == "w" || command == "W") {
+      this->condOut.lcdPrint("WIPING", "");
+      this->condOut.lcdSave();
       this->plotter.executeWipe();
     } else if (command.startsWith("ra") || command.startsWith("RA")) {
       this->messageReceived(getAcceptedTopic, command.substring(2));
@@ -63,6 +67,8 @@ void PlotterController::performCycle() {
     } else if (command.startsWith("rt") || command.startsWith("RT")) {
       this->messageReceived(toDeviceTopic, command.substring(2));
     } else {
+      this->condOut.lcdPrint("COMMAND:", command);
+      this->condOut.lcdSave();
       this->plotter.computeSteps(command);
       this->hasSteps = this->plotter.getStepCount() > 0;
     }
@@ -79,6 +85,9 @@ void PlotterController::performCycle() {
   if (!this->initialized) {
     JSONVar empty;
     this->waitingForDeviceShadow = true;
+    this->condOut.println("Getting shadow");
+    this->condOut.lcdPrint("Getting Shadow", "");
+    this->condOut.lcdSave();
     this->publishMessage(this->getTopic, empty);
     this->initialized = true;
     return;
@@ -113,6 +122,9 @@ void PlotterController::requestDrawing() {
   JSONVar message;
   message["command"] = "drawing";
 
+  this->condOut.println("Getting drawing");
+  this->condOut.lcdPrint("Getting Drawing", "");
+  this->condOut.lcdSave();
   this->publishMessage(this->fromDeviceTopic, message);
 }
 
@@ -125,6 +137,10 @@ void PlotterController::requestLine() {
   message["drawing"] = this->currentDrawing;
   message["line"] = this->currentLine;
 
+  String lineMsg = "Line: ";
+  this->condOut.println("Getting " + lineMsg + this->currentLine + ", Drawing: " + this->currentDrawing);
+  this->condOut.lcdPrint("Getting Line", lineMsg + this->currentLine);
+  this->condOut.lcdSave();
   this->publishMessage(this->fromDeviceTopic, message);
 }
 
@@ -170,7 +186,6 @@ void PlotterController::getAcceptedMessage(const String& message) {
 
 void PlotterController::getRejectedMessage(const String& message) {
   this->waitingForDeviceShadow = false;
-  this->plotter.executeWipe();
 }
 
 void PlotterController::toDeviceMessage(const String& message) {
@@ -191,6 +206,8 @@ void PlotterController::toDeviceMessage(const String& message) {
 
         this->currentDrawing = drawing;
         this->totalLines = totalLines;
+        this->condOut.lcdPrint("Start Drawing", drawing);
+        this->condOut.lcdSave();
         this->plotter.executeWipe();
         this->currentLine = 0;
       }
@@ -208,6 +225,8 @@ void PlotterController::toDeviceMessage(const String& message) {
       if (json.hasOwnProperty("command")) {
         String command = json["command"];
 
+        this->condOut.lcdPrint("COMMAND:", command);
+        this->condOut.lcdSave();
         this->plotter.computeSteps(command);
         this->hasSteps = this->plotter.getStepCount() > 0;
       }
@@ -256,6 +275,8 @@ void PlotterController::reportState() {
   JSONVar msg;
   msg["state"] = state;
 
+  String stateMsg = JSON.stringify(msg);
+  this->condOut.println("Reporting state: " + stateMsg);
   this->publishMessage(this->updateTopic, msg);
 }
 
@@ -268,10 +289,7 @@ void PlotterController::reportError(const String& type, const String& message) {
   msg["totalLines"] = this->totalLines;
   msg["line"] = this->currentLine;
 
+  String errorMsg = JSON.stringify(msg);
+  this->condOut.println("Reporting error: " + errorMsg);
   this->publishMessage(this->fromDeviceTopic, msg);
-}
-
-void PlotterController::simulateMessageReceived(const char topic[], const String& message) {
-  const String tp = String(topic);
-  this->messageReceived(topic, message);
 }

@@ -183,7 +183,12 @@ void CondOut::lcdPrint(String& value) {
 
 void CondOut::lcdPrint(const char value[]) {
   if (useLcd) {
-    lcd.print(value);
+    String val = value;
+    if (val.length() > 16) {
+      val = val.substring(0, 16);
+    }
+
+    lcd.print(val);
   }
 }
 
@@ -194,21 +199,29 @@ void CondOut::lcdPrint(long value, int base) {
 }
 
 void CondOut::lcdPrint(const char line1[], String& line2) {
-  if (useLcd) {
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print(line1);
-    lcd.setCursor(0, 1);
-    lcd.print(line2);
-  }
+  this->lcdPrint(line1, line2.c_str());
 }
 
 void CondOut::lcdPrint(const char line1[], const char line2[]) {
   if (useLcd) {
     lcd.clear();
     lcd.setCursor(0, 0);
-    lcd.print(line1);
+    this->lcdPrint(line1);
     lcd.setCursor(0, 1);
-    lcd.print(line2);
+    this->lcdPrint(line2);
   }
+
+  if (!this->preserveLastLines) {
+    this->lastLine1 = line1;
+    this->lastLine2 = line2;
+  }
+}
+
+void CondOut::lcdSave() {
+  this->preserveLastLines = true;
+}
+
+void CondOut::lcdPrintSaved() {
+  lcdPrint(this->lastLine1.c_str(), this->lastLine2.c_str());
+  this->preserveLastLines = false;
 }

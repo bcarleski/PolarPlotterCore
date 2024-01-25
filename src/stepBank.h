@@ -31,7 +31,7 @@
 
 class StepBank {
 private:
-  CondOut condOut;
+  CondOut& condOut;
   Step blankStep;
   Step steps[MAX_STEPS];
   unsigned int stepCount;

@@ -28,7 +28,7 @@
 
 class LineStepCalculator {
 private:
-  CondOut condOut;
+  CondOut& condOut;
   unsigned int debugLevel;
   Point middle;
   Point keepMinorIncrementMajor;

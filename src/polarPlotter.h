@@ -28,8 +28,8 @@
 
 class PolarPlotter {
 private:
-  CondOut condOut;
-  void (*stepper)(const Step& step);
+  CondOut& condOut;
+  void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
   LineStepCalculator lineStepCalculator;
   StepBank steps;
   unsigned int stepIndex;
@@ -46,11 +46,12 @@ private:
   void executeRadiusSteps(int radiusSteps);
   void executeFullCircleSteps();
   void setFinishPoint(String& command);
+  bool executeStep(const bool fastStep);
 
 
 public:
   PolarPlotter(CondOut& condOut, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps);
-  void onStep(void stepper(const Step& step));
+  void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
   void init(float initialRadius, float initialAzimuth);
   void computeSteps(String& command);
   void executeWipe();
