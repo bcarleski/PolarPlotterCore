@@ -23,43 +23,59 @@
 
 #include "plotterController.h"
 
-PlotterController::PlotterController(CondOut& condOut, PolarPlotter& plotter)
-  : condOut(condOut),
-    plotter(plotter) {
+PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater, PolarPlotter &plotter)
+    : printer(printer),
+      statusUpdater(statusUpdater),
+      plotter(plotter)
+{
 }
 
-void PlotterController::performCycle() {
-  if (!this->hasSteps) {
-    if (!this->needsCommands()) this->commandIndex++;
-    if (this->needsCommands()) return;
+void PlotterController::performCycle()
+{
+  if (!this->hasSteps)
+  {
+    if (!this->needsCommands())
+      this->commandIndex++;
+    if (this->needsCommands())
+      return;
 
     String command = this->commands[this->commandIndex];
     String str = "";
-    this->condOut.lcdPrint(this->drawing, str + (this->commandIndex + 1) + ": " + command);
-    this->condOut.lcdSave();
-    this->plotter.computeSteps(this->commands[this->commandIndex]);
+    this->statusUpdater.status(this->drawing, str + (this->commandIndex + 1) + ": " + command);
+    this->printer.println("Computing steps for command: " + command);
+    this->plotter.computeSteps(command);
+    this->printer.print("    Computed step count: ");
+    this->printer.println(this->plotter.getStepCount());
     this->hasSteps = this->plotter.getStepCount() > 0;
+    this->printer.print("    Has Steps: ");
+    this->printer.println(this->hasSteps);
   }
 
-  if (this->hasSteps) {
+  if (this->hasSteps)
+  {
     this->hasSteps = plotter.step();
   }
 }
 
-bool PlotterController::needsCommands() {
+bool PlotterController::needsCommands()
+{
   return this->commandIndex >= this->commandCount;
 }
 
-void PlotterController::newDrawing(String& drawing) {
+void PlotterController::newDrawing(String &drawing)
+{
   this->commandIndex = 0;
   this->commandCount = 0;
   this->drawing = drawing;
-  this->condOut.lcdPrint("WIPING", "");
+  this->statusUpdater.status("WIPING");
+  this->printer.println("Executing wipe");
   this->plotter.executeWipe();
 }
 
-void PlotterController::addCommand(String& command) {
-  if (this->commandCount < MAX_COMMAND_COUNT) {
+void PlotterController::addCommand(String &command)
+{
+  if (this->commandCount < MAX_COMMAND_COUNT)
+  {
     this->commands[this->commandCount++] = command;
   }
 }

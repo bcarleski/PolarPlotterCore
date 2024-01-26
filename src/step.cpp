@@ -27,46 +27,60 @@
 #define AZIMUTH_STEP_NEGATIVE 0x1
 #include "step.h"
 
-Step::Step() {
+Step::Step()
+{
   this->state = 0;
 }
 
-void Step::setSteps(int radiusStep, int azimuthStep) {
+void Step::setSteps(int radiusStep, int azimuthStep)
+{
   byte state = 0;
 
-  if (radiusStep > 0) {
+  if (radiusStep > 0)
+  {
     state |= RADIUS_STEP_POSITIVE;
-  } else if (radiusStep < 0) {
+  }
+  else if (radiusStep < 0)
+  {
     state |= RADIUS_STEP_NEGATIVE;
   }
 
-  if (azimuthStep > 0) {
+  if (azimuthStep > 0)
+  {
     state |= AZIMUTH_STEP_POSITIVE;
-  } else if (azimuthStep < 0) {
+  }
+  else if (azimuthStep < 0)
+  {
     state |= AZIMUTH_STEP_NEGATIVE;
   }
 
   this->state = state;
 }
 
-int Step::getRadiusStep() const {
-  if (this->state & RADIUS_STEP_POSITIVE) {
+int Step::getRadiusStep() const
+{
+  if (this->state & RADIUS_STEP_POSITIVE)
+  {
     return 1;
   }
 
-  if (this->state & RADIUS_STEP_NEGATIVE) {
+  if (this->state & RADIUS_STEP_NEGATIVE)
+  {
     return -1;
   }
 
   return 0;
 }
 
-int Step::getAzimuthStep() const {
-  if (this->state & AZIMUTH_STEP_POSITIVE) {
+int Step::getAzimuthStep() const
+{
+  if (this->state & AZIMUTH_STEP_POSITIVE)
+  {
     return 1;
   }
 
-  if (this->state & AZIMUTH_STEP_NEGATIVE) {
+  if (this->state & AZIMUTH_STEP_NEGATIVE)
+  {
     return -1;
   }
 

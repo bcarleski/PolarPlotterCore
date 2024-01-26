@@ -21,55 +21,47 @@
     SOFTWARE.
 */
 
-#ifndef _POLARPLOTTERCORE_CONDOUT_H_
-#define _POLARPLOTTERCORE_CONDOUT_H_
+#ifndef _POLARPLOTTERCORE_STATUSPRINT_H_
+#define _POLARPLOTTERCORE_STATUSPRINT_H_
 
 #include <Arduino.h>
-#include <LiquidCrystal.h>
-#include "point.h"
 
-class CondOut {
+class StatusUpdate
+{
 private:
-  LiquidCrystal lcd;
-  const bool useLcd;
+  const String empty = "";
   String lastLine1;
   String lastLine2;
   bool preserveLastLines;
 
 public:
-  CondOut(LiquidCrystal&, bool);
-  void init();
+  void status(const String &status) {
+    this->writeStatus(status, empty);
+  }
+  void status(const char status[]) {
+    this->writeStatus(status, empty);
+  }
+  void status(const String &key, long value, int base = DEC) {
+    this->writeStatus(key, empty + value);
+  }
+  void status(const char key[], long value, int base = DEC) {
+    this->writeStatus(key, empty + value);
+  }
+  void status(const String &key, const String &value) {
+    this->writeStatus(key, value);
+  }
+  void status(const char key[], const String &value) {
+    this->writeStatus(key, value);
+  }
+  void status(const String &key, const char value[]) {
+    this->writeStatus(key, value);
+  }
+  void status(const char key[], const char value[]) {
+    this->writeStatus(key, value);
+  }
 
-  void print(String&);
-  void print(const char[]);
-  void print(int, int = DEC);
-  void print(unsigned int, int = DEC);
-  void print(float, int = DEC);
-  void print(double, int = DEC);
-  void print(long, int = DEC);
-  void print(unsigned long, int = DEC);
-  void print(String, Point&);
-  void println(String&);
-  void println(const char[]);
-  void println(int, int = DEC);
-  void println(unsigned int, int = DEC);
-  void println(float, int = DEC);
-  void println(double, int = DEC);
-  void println(long, int = DEC);
-  void println(unsigned long, int = DEC);
-  void println(String, Point&);
-
-  void clear();
-  void setCursor(int, int);
-  void lcdPrint(String&);
-  void lcdPrint(const char[]);
-  void lcdPrint(long, int = DEC);
-  void lcdPrint(const char[], String&);
-  void lcdPrint(const char[], const char[]);
-  void lcdPrint(String&, const char[]);
-  void lcdPrint(String&, String&);
-  void lcdSave();
-  void lcdPrintSaved();
+protected:
+  virtual void writeStatus(const String &key, const String &value) = 0;
 };
 
 #endif

@@ -25,10 +25,12 @@
 #define _POLARPLOTTERCORE_LINESTEPCALCULATOR_H_
 
 #include "stepBank.h"
+#include "extendedPrinter.h"
 
-class LineStepCalculator {
+class LineStepCalculator
+{
 private:
-  CondOut& condOut;
+  ExtendedPrinter printer;
   unsigned int debugLevel;
   Point middle;
   Point keepMinorIncrementMajor;
@@ -39,21 +41,21 @@ private:
   float radiusStepSize;
   float azimuthStepSize;
 
-  void addBulkSteps(StepBank& steps, float radiusStepOffset, float azimuthStepOffset, int stepCount);
-  void addCompoundStepsForLine(StepBank& steps, Point& start, Point& finish, float startA);
-  void showLine(Point& start, Point& finish, int radiusSteps, int azimuthSteps, float radiusStepOffset, float azimuthStepOffset, float xDelta, float yDelta, float distanceDenominator);
-  void showPoints(Point& kpMinIncMajP, Point& incMinIncMajP, Point& incMinKpMajP, Point& decMinIncMajP, Point& decMinKpMajP);
+  void addBulkSteps(StepBank &steps, float radiusStepOffset, float azimuthStepOffset, int stepCount);
+  void addCompoundStepsForLine(StepBank &steps, Point &start, Point &finish, float startA);
+  void showLine(Point &start, Point &finish, int radiusSteps, int azimuthSteps, float radiusStepOffset, float azimuthStepOffset, float xDelta, float yDelta, float distanceDenominator);
+  void showPoints(Point &kpMinIncMajP, Point &incMinIncMajP, Point &incMinKpMajP, Point &decMinIncMajP, Point &decMinKpMajP);
   void showDistances(String prefix, String distanceToWhere, float kpMinIncMajDist, float incMinIncMajDist, float incMinKpMajDist, float decMinIncMajDist, float decMinKpMajDist);
   void showLastDistanceAndSteps(float lastDist, int minorStep, int majorStep);
-  void addStep(StepBank& steps, float radiusStepOffset, int radiusStepIncrement, float azimuthStepOffset, int azimuthStepIncrement);
+  void addStep(StepBank &steps, float radiusStepOffset, int radiusStepIncrement, float azimuthStepOffset, int azimuthStepIncrement);
   int getStepValue(float offset, int increment);
-  float findDistanceToFinish(Point& finish, Point& point);
-  float findDistanceFromLine(Point& start, Point& point, float xDelta, float yDelta, float distanceDenominator);
-  void orientEndPoint(Point& start, Point& end);
+  float findDistanceToFinish(Point &finish, Point &point);
+  float findDistanceFromLine(Point &start, Point &point, float xDelta, float yDelta, float distanceDenominator);
+  void orientEndPoint(Point &start, Point &end);
 
 public:
-  LineStepCalculator(CondOut& condOut, float radiusStepSize, float azimuthStepSize);
-  void addLineSteps(Point& start, Point& finish, StepBank& steps);
+  LineStepCalculator(Print &printer, float radiusStepSize, float azimuthStepSize);
+  void addLineSteps(Point &start, Point &finish, StepBank &steps);
   void setDebug(unsigned int level);
 };
 

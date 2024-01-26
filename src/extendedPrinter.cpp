@@ -21,30 +21,51 @@
     SOFTWARE.
 */
 
-#ifndef _POLARPLOTTERCORE_POINT_H_
-#define _POLARPLOTTERCORE_POINT_H_
+#include "extendedPrinter.h"
 
-#include "math.h"
-
-class Point
+ExtendedPrinter::ExtendedPrinter(Print &printer)
+    : printer(printer)
 {
-private:
-  float x;
-  float y;
-  float radius;
-  float azimuth;
+}
 
-public:
-  Point();
-  Point(float radius, float azimuth);
-  Point(float x, float y, float radius, float azimuth);
-  float getX() const;
-  float getY() const;
-  float getRadius() const;
-  float getAzimuth() const;
-  void repoint(float radius, float azimuth);
-  void cartesianRepoint(float x, float y);
-  void cloneFrom(Point &other);
-};
+size_t ExtendedPrinter::write(uint8_t c)
+{
+    this->printer.write(c);
+}
 
-#endif
+size_t ExtendedPrinter::write(const uint8_t *str, size_t len)
+{
+    this->printer.write(str, len);
+}
+
+void ExtendedPrinter::print(const char name[], const Point &value)
+{
+    String str = name;
+    this->print(str, value);
+}
+
+void ExtendedPrinter::print(const String &name, const Point &value)
+{
+    this->printer.print(name);
+    this->printer.print("=(");
+    this->printer.print(value.getX(), 4);
+    this->printer.print(", ");
+    this->printer.print(value.getY(), 4);
+    this->printer.print(", ");
+    this->printer.print(value.getRadius(), 4);
+    this->printer.print(", ");
+    this->printer.print(value.getAzimuth(), 4);
+    this->printer.print(")");
+}
+
+void ExtendedPrinter::println(const char name[], const Point &value)
+{
+    String str = name;
+    this->println(str, value);
+}
+
+void ExtendedPrinter::println(const String &name, const Point &value)
+{
+    this->print(name, value);
+    this->printer.println();
+}

@@ -29,22 +29,24 @@
 
 #define TOPIC_SUBSCRIPTION_COUNT 3
 
-class PlotterController {
-  private:
-    CondOut& condOut;
-    PolarPlotter& plotter;
-    String drawing;
-    String commands[MAX_COMMAND_COUNT];
-    bool hasSteps;
-    int commandCount;
-    int commandIndex;
+class PlotterController
+{
+private:
+  Print &printer;
+  StatusUpdate &statusUpdater;
+  PolarPlotter &plotter;
+  String drawing;
+  String commands[MAX_COMMAND_COUNT];
+  bool hasSteps;
+  int commandCount;
+  int commandIndex;
 
-  public:
-    PlotterController(CondOut&, PolarPlotter&);
-    void performCycle();
-    bool needsCommands();
-    void newDrawing(String& drawing);
-    void addCommand(String& command);
+public:
+  PlotterController(Print &printer, StatusUpdate &statusUpdater, PolarPlotter &);
+  void performCycle();
+  bool needsCommands();
+  void newDrawing(String &drawing);
+  void addCommand(String &command);
 };
 
 #endif

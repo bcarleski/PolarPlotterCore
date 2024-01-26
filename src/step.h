@@ -26,14 +26,16 @@
 
 #include <Arduino.h>
 
-class Step {
-  private:
-    byte state;
-  public:
-    Step();
-    void setSteps(int radiusStep, int azimuthStep);
-    int getRadiusStep() const;
-    int getAzimuthStep() const;
+class Step
+{
+private:
+  byte state;
+
+public:
+  Step();
+  void setSteps(int radiusStep, int azimuthStep);
+  int getRadiusStep() const;
+  int getAzimuthStep() const;
 };
 
 #endif

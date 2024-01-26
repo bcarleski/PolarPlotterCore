@@ -24,20 +24,21 @@
 #ifndef _POLARPLOTTERCORE_STEPBANK_H_
 #define _POLARPLOTTERCORE_STEPBANK_H_
 
-#include "condOut.h"
 #include "step.h"
 
 #define MAX_STEPS 8192
 
-class StepBank {
+class StepBank
+{
 private:
-  CondOut& condOut;
+  Print &printer;
   Step blankStep;
   Step steps[MAX_STEPS];
   unsigned int stepCount;
   unsigned int debugLevel;
+
 public:
-  StepBank(CondOut& condOut);
+  StepBank(Print &printer);
   void addStep(int radiusStep, int azimuthStep);
   Step getStep(unsigned int stepIndex);
   unsigned int getStepCount() const;

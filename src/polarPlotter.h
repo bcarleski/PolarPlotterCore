@@ -25,10 +25,13 @@
 #define _POLARPLOTTERCORE_POLARPLOTTER_H_
 
 #include "lineStepCalculator.h"
+#include "statusUpdate.h"
 
-class PolarPlotter {
+class PolarPlotter
+{
 private:
-  CondOut& condOut;
+  ExtendedPrinter printer;
+  StatusUpdate &statusUpdater;
   void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
   LineStepCalculator lineStepCalculator;
   StepBank steps;
@@ -45,15 +48,14 @@ private:
   void executeStepsToCenter();
   void executeRadiusSteps(int radiusSteps);
   void executeFullCircleSteps();
-  void setFinishPoint(String& command);
+  void setFinishPoint(String &command);
   bool executeStep(const bool fastStep);
 
-
 public:
-  PolarPlotter(CondOut& condOut, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps);
+  PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps);
   void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
   void init(float initialRadius, float initialAzimuth);
-  void computeSteps(String& command);
+  void computeSteps(String &command);
   void executeWipe();
   bool step();
   unsigned int getStepCount() const;

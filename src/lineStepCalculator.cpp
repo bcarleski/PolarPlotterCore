@@ -23,8 +23,8 @@
 
 #include "lineStepCalculator.h"
 
-LineStepCalculator::LineStepCalculator(CondOut &condOut, float radiusStepSize, float azimuthStepSize)
-    : condOut(condOut),
+LineStepCalculator::LineStepCalculator(Print &printer, float radiusStepSize, float azimuthStepSize)
+    : printer(ExtendedPrinter(printer)),
       radiusStepSize(radiusStepSize),
       azimuthStepSize(azimuthStepSize)
 {
@@ -42,30 +42,30 @@ void LineStepCalculator::addLineSteps(Point &start, Point &finish, StepBank &ste
 
   if (this->debugLevel >= 2)
   {
-    this->condOut.print(" Going from (");
-    this->condOut.print(start.getX(), 4);
-    this->condOut.print(",");
-    this->condOut.print(start.getY(), 4);
-    this->condOut.print(",");
-    this->condOut.print(start.getRadius(), 4);
-    this->condOut.print(",");
-    this->condOut.print(start.getAzimuth(), 4);
-    this->condOut.print(") to (");
-    this->condOut.print(finish.getX(), 4);
-    this->condOut.print(",");
-    this->condOut.print(finish.getY(), 4);
-    this->condOut.print(",");
-    this->condOut.print(finish.getRadius(), 4);
-    this->condOut.print(",");
-    this->condOut.print(finish.getAzimuth(), 4);
-    this->condOut.print(") in ");
-    this->condOut.print(radiusSteps);
-    this->condOut.print(" radius steps and ");
-    this->condOut.print(azimuthSteps);
-    this->condOut.print(" azimuth steps with a radius step offset of ");
-    this->condOut.print(radiusStepOffset, 4);
-    this->condOut.print(" and an azimuth step offset of ");
-    this->condOut.println(azimuthStepOffset, 4);
+    this->printer.print(" Going from (");
+    this->printer.print(start.getX(), 4);
+    this->printer.print(",");
+    this->printer.print(start.getY(), 4);
+    this->printer.print(",");
+    this->printer.print(start.getRadius(), 4);
+    this->printer.print(",");
+    this->printer.print(start.getAzimuth(), 4);
+    this->printer.print(") to (");
+    this->printer.print(finish.getX(), 4);
+    this->printer.print(",");
+    this->printer.print(finish.getY(), 4);
+    this->printer.print(",");
+    this->printer.print(finish.getRadius(), 4);
+    this->printer.print(",");
+    this->printer.print(finish.getAzimuth(), 4);
+    this->printer.print(") in ");
+    this->printer.print(radiusSteps);
+    this->printer.print(" radius steps and ");
+    this->printer.print(azimuthSteps);
+    this->printer.print(" azimuth steps with a radius step offset of ");
+    this->printer.print(radiusStepOffset, 4);
+    this->printer.print(" and an azimuth step offset of ");
+    this->printer.println(azimuthStepOffset, 4);
   }
 
   // If we are at the origin, make sure we are pointed in the right direction before heading out
@@ -222,22 +222,22 @@ void LineStepCalculator::showLine(Point &start, Point &finish, int radiusSteps, 
     return;
   }
 
-  this->condOut.print("  Compound steps from", start);
-  this->condOut.print(" to", finish);
-  this->condOut.print(", radiusSteps=");
-  this->condOut.print(radiusSteps);
-  this->condOut.print(", azimuthSteps=");
-  this->condOut.print(azimuthSteps);
-  this->condOut.print(", radiusStepOffset=");
-  this->condOut.print(radiusStepOffset, 4);
-  this->condOut.print(", azimuthStepOffset=");
-  this->condOut.print(azimuthStepOffset, 4);
-  this->condOut.print(", xDelta=");
-  this->condOut.print(xDelta, 4);
-  this->condOut.print(", yDelta=");
-  this->condOut.print(yDelta, 4);
-  this->condOut.print(", distanceDenominator=");
-  this->condOut.println(distanceDenominator, 4);
+  this->printer.print("  Compound steps from", start);
+  this->printer.print(" to", finish);
+  this->printer.print(", radiusSteps=");
+  this->printer.print(radiusSteps);
+  this->printer.print(", azimuthSteps=");
+  this->printer.print(azimuthSteps);
+  this->printer.print(", radiusStepOffset=");
+  this->printer.print(radiusStepOffset, 4);
+  this->printer.print(", azimuthStepOffset=");
+  this->printer.print(azimuthStepOffset, 4);
+  this->printer.print(", xDelta=");
+  this->printer.print(xDelta, 4);
+  this->printer.print(", yDelta=");
+  this->printer.print(yDelta, 4);
+  this->printer.print(", distanceDenominator=");
+  this->printer.println(distanceDenominator, 4);
 }
 
 void LineStepCalculator::showPoints(Point &kpMinIncMajP, Point &incMinIncMajP, Point &incMinKpMajP, Point &decMinIncMajP, Point &decMinKpMajP)
@@ -247,17 +247,17 @@ void LineStepCalculator::showPoints(Point &kpMinIncMajP, Point &incMinIncMajP, P
     return;
   }
 
-  this->condOut.print("   ");
-  this->condOut.print("KeepMinorIncrementMajorPoint", kpMinIncMajP);
-  this->condOut.print("; ");
-  this->condOut.print("IncrementMinorIncrementMajorPoint", incMinIncMajP);
-  this->condOut.print("; ");
-  this->condOut.print("IncrementMinorKeepMajorPoint", incMinKpMajP);
-  this->condOut.print("; ");
-  this->condOut.print("DecrementMinorIncrementMajorPoint", decMinIncMajP);
-  this->condOut.print("; ");
-  this->condOut.print("DecrementMinorKeepMajorPoint", decMinKpMajP);
-  this->condOut.println("");
+  this->printer.print("   ");
+  this->printer.print("KeepMinorIncrementMajorPoint", kpMinIncMajP);
+  this->printer.print("; ");
+  this->printer.print("IncrementMinorIncrementMajorPoint", incMinIncMajP);
+  this->printer.print("; ");
+  this->printer.print("IncrementMinorKeepMajorPoint", incMinKpMajP);
+  this->printer.print("; ");
+  this->printer.print("DecrementMinorIncrementMajorPoint", decMinIncMajP);
+  this->printer.print("; ");
+  this->printer.print("DecrementMinorKeepMajorPoint", decMinKpMajP);
+  this->printer.println("");
 }
 
 void LineStepCalculator::showDistances(String prefix, String distanceToWhere, float kpMinIncMajDist, float incMinIncMajDist, float incMinKpMajDist, float decMinIncMajDist, float decMinKpMajDist)
@@ -267,27 +267,27 @@ void LineStepCalculator::showDistances(String prefix, String distanceToWhere, fl
     return;
   }
 
-  this->condOut.print(prefix);
-  this->condOut.print("KeepMinorIncrementMajorDistanceTo");
-  this->condOut.print(distanceToWhere);
-  this->condOut.print("=");
-  this->condOut.print(kpMinIncMajDist, 4);
-  this->condOut.print(", IncrementMinorIncrementMajorDistanceTo");
-  this->condOut.print(distanceToWhere);
-  this->condOut.print("=");
-  this->condOut.print(incMinIncMajDist, 4);
-  this->condOut.print(", IncrementMinorKeepMajorDistanceTo");
-  this->condOut.print(distanceToWhere);
-  this->condOut.print("=");
-  this->condOut.print(incMinKpMajDist, 4);
-  this->condOut.print(", DecrementMinorIncrementMajorDistanceTo");
-  this->condOut.print(distanceToWhere);
-  this->condOut.print("=");
-  this->condOut.print(decMinIncMajDist, 4);
-  this->condOut.print(", DecrementMinorKeepMajorDistanceTo");
-  this->condOut.print(distanceToWhere);
-  this->condOut.print("=");
-  this->condOut.print(decMinKpMajDist, 4);
+  this->printer.print(prefix);
+  this->printer.print("KeepMinorIncrementMajorDistanceTo");
+  this->printer.print(distanceToWhere);
+  this->printer.print("=");
+  this->printer.print(kpMinIncMajDist, 4);
+  this->printer.print(", IncrementMinorIncrementMajorDistanceTo");
+  this->printer.print(distanceToWhere);
+  this->printer.print("=");
+  this->printer.print(incMinIncMajDist, 4);
+  this->printer.print(", IncrementMinorKeepMajorDistanceTo");
+  this->printer.print(distanceToWhere);
+  this->printer.print("=");
+  this->printer.print(incMinKpMajDist, 4);
+  this->printer.print(", DecrementMinorIncrementMajorDistanceTo");
+  this->printer.print(distanceToWhere);
+  this->printer.print("=");
+  this->printer.print(decMinIncMajDist, 4);
+  this->printer.print(", DecrementMinorKeepMajorDistanceTo");
+  this->printer.print(distanceToWhere);
+  this->printer.print("=");
+  this->printer.print(decMinKpMajDist, 4);
 }
 
 void LineStepCalculator::showLastDistanceAndSteps(float lastDist, int minorStep, int majorStep)
@@ -297,12 +297,12 @@ void LineStepCalculator::showLastDistanceAndSteps(float lastDist, int minorStep,
     return;
   }
 
-  this->condOut.print(", NextLastDistanceToFinish=");
-  this->condOut.print(lastDist, 4);
-  this->condOut.print(", MinorStep=");
-  this->condOut.print(minorStep);
-  this->condOut.print(", MajorStep=");
-  this->condOut.println(majorStep);
+  this->printer.print(", NextLastDistanceToFinish=");
+  this->printer.print(lastDist, 4);
+  this->printer.print(", MinorStep=");
+  this->printer.print(minorStep);
+  this->printer.print(", MajorStep=");
+  this->printer.println(majorStep);
 }
 
 void LineStepCalculator::addStep(StepBank &steps, float radiusStepOffset, int radiusStepIncrement, float azimuthStepOffset, int azimuthStepIncrement)
@@ -312,14 +312,14 @@ void LineStepCalculator::addStep(StepBank &steps, float radiusStepOffset, int ra
 
   if (this->debugLevel >= 4)
   {
-    this->condOut.print("    RadiusStepIncrement=");
-    this->condOut.print(radiusStepIncrement, 4);
-    this->condOut.print(", RadiusStep=");
-    this->condOut.print(radiusStep, 4);
-    this->condOut.print(", AzimuthStepIncrement=");
-    this->condOut.print(azimuthStepIncrement, 4);
-    this->condOut.print(", AzimuthStep=");
-    this->condOut.println(azimuthStep, 4);
+    this->printer.print("    RadiusStepIncrement=");
+    this->printer.print(radiusStepIncrement, 4);
+    this->printer.print(", RadiusStep=");
+    this->printer.print(radiusStep, 4);
+    this->printer.print(", AzimuthStepIncrement=");
+    this->printer.print(azimuthStepIncrement, 4);
+    this->printer.print(", AzimuthStep=");
+    this->printer.println(azimuthStep, 4);
   }
 
   steps.addStep(radiusStep, azimuthStep);

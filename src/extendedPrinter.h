@@ -21,30 +21,28 @@
     SOFTWARE.
 */
 
-#ifndef _POLARPLOTTERCORE_POINT_H_
-#define _POLARPLOTTERCORE_POINT_H_
+#ifndef _POLARPLOTTERCORE_EXTENDEDPRINTER_H_
+#define _POLARPLOTTERCORE_EXTENDEDPRINTER_H_
 
-#include "math.h"
+#include <Arduino.h>
+#include "point.h"
 
-class Point
+class ExtendedPrinter : public Print
 {
 private:
-  float x;
-  float y;
-  float radius;
-  float azimuth;
+  Print &printer;
 
 public:
-  Point();
-  Point(float radius, float azimuth);
-  Point(float x, float y, float radius, float azimuth);
-  float getX() const;
-  float getY() const;
-  float getRadius() const;
-  float getAzimuth() const;
-  void repoint(float radius, float azimuth);
-  void cartesianRepoint(float x, float y);
-  void cloneFrom(Point &other);
+  ExtendedPrinter(Print &printer);
+  void print(const char[], const Point&);
+  void print(const String&, const Point&);
+  void println(const char[], const Point&);
+  void println(const String&, const Point&);
+  size_t write(uint8_t c);
+  size_t write(const uint8_t*, size_t);
+  using Print::write; // pull in write(str) and write(buf, size) from Print
+  using Print::print;
+  using Print::println;
 };
 
 #endif
