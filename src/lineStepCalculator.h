@@ -40,17 +40,27 @@ private:
   Point decrementMinorKeepMajor;
   float radiusStepSize;
   float azimuthStepSize;
+  float startA;
+  float radiusStepOffset;
+  float azimuthStepOffset;
+  int radiusSteps;
+  int azimuthSteps;
 
+protected:
+  virtual void computeLineProperties(Point &start, Point &finish);
+  virtual void handleDirectChanges(Point &start, Point &finish, StepBank &steps);
+  virtual void determineMiddle(Point &start, Point &finish);
   void addBulkSteps(StepBank &steps, float radiusStepOffset, float azimuthStepOffset, int stepCount);
   void addCompoundStepsForLine(StepBank &steps, Point &start, Point &finish, float startA);
-  void showLine(Point &start, Point &finish, int radiusSteps, int azimuthSteps, float radiusStepOffset, float azimuthStepOffset, float xDelta, float yDelta, float distanceDenominator);
+  void showLine(String prefix, bool fullLine, Point &start, Point &finish, int radiusSteps, int azimuthSteps, float radiusStepOffset, float azimuthStepOffset);
+  void showDeltas(float xDelta, float yDelta, float distanceDenominator);
   void showPoints(Point &kpMinIncMajP, Point &incMinIncMajP, Point &incMinKpMajP, Point &decMinIncMajP, Point &decMinKpMajP);
   void showDistances(String prefix, String distanceToWhere, float kpMinIncMajDist, float incMinIncMajDist, float incMinKpMajDist, float decMinIncMajDist, float decMinKpMajDist);
   void showLastDistanceAndSteps(float lastDist, int minorStep, int majorStep);
   void addStep(StepBank &steps, float radiusStepOffset, int radiusStepIncrement, float azimuthStepOffset, int azimuthStepIncrement);
   int getStepValue(float offset, int increment);
-  float findDistanceToFinish(Point &finish, Point &point);
-  float findDistanceFromLine(Point &start, Point &point, float xDelta, float yDelta, float distanceDenominator);
+  virtual float findDistanceToFinish(Point &finish, Point &point);
+  virtual float findDistanceFromLine(Point &start, Point &point, float xDelta, float yDelta, float distanceDenominator);
   void orientEndPoint(Point &start, Point &end);
 
 public:

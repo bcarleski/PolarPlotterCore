@@ -41,10 +41,14 @@ private:
   int commandCount;
   int commandIndex;
 
+  bool needsCommands();
+  void executeCommand(String& command);
+  void setDebug(String& command);
+
 public:
   PlotterController(Print &printer, StatusUpdate &statusUpdater, PolarPlotter &);
   void performCycle();
-  bool needsCommands();
+  bool canCycle();
   void newDrawing(String &drawing);
   void addCommand(String &command);
 };

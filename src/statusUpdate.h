@@ -24,12 +24,16 @@
 #ifndef _POLARPLOTTERCORE_STATUSPRINT_H_
 #define _POLARPLOTTERCORE_STATUSPRINT_H_
 
+#ifndef __IN_TEST__
 #include <Arduino.h>
+#else
+#include "mockArduino.h"
+#endif
 
 class StatusUpdate
 {
 private:
-  const String empty = "";
+  const String empty;
   String lastLine1;
   String lastLine2;
   bool preserveLastLines;
@@ -39,25 +43,33 @@ public:
     this->writeStatus(status, empty);
   }
   void status(const char status[]) {
-    this->writeStatus(status, empty);
+    String v(status);
+    this->writeStatus(v, empty);
   }
   void status(const String &key, long value, int base = DEC) {
-    this->writeStatus(key, empty + value);
+    String v(value);
+    this->writeStatus(key, v);
   }
   void status(const char key[], long value, int base = DEC) {
-    this->writeStatus(key, empty + value);
+    String k(key);
+    String v(value);
+    this->writeStatus(k, v);
   }
   void status(const String &key, const String &value) {
     this->writeStatus(key, value);
   }
   void status(const char key[], const String &value) {
-    this->writeStatus(key, value);
+    String k(key);
+    this->writeStatus(k, value);
   }
   void status(const String &key, const char value[]) {
-    this->writeStatus(key, value);
+    String v(value);
+    this->writeStatus(key, v);
   }
   void status(const char key[], const char value[]) {
-    this->writeStatus(key, value);
+    String k(key);
+    String v(value);
+    this->writeStatus(k, v);
   }
 
 protected:

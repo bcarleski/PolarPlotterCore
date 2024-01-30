@@ -24,7 +24,11 @@
 #ifndef _POLARPLOTTERCORE_STEP_H_
 #define _POLARPLOTTERCORE_STEP_H_
 
+#ifndef __IN_TEST__
 #include <Arduino.h>
+#else
+#include "mockArduino.h"
+#endif
 
 class Step
 {

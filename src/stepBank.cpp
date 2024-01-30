@@ -26,6 +26,7 @@
 StepBank::StepBank(Print &printer)
     : printer(printer)
 {
+  stepCount = 0;
 }
 
 void StepBank::addStep(int radiusStep, int azimuthStep)

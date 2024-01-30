@@ -32,50 +32,88 @@ PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater
 
 void PlotterController::performCycle()
 {
-  if (!this->hasSteps)
+  if (!hasSteps)
   {
-    if (!this->needsCommands())
-      this->commandIndex++;
-    if (this->needsCommands())
-      return;
+    if (this->needsCommands()) return;
 
-    String command = this->commands[this->commandIndex];
+    String command = commands[commandIndex++];
     String str = "";
-    this->statusUpdater.status(this->drawing, str + (this->commandIndex + 1) + ": " + command);
-    this->printer.println("Computing steps for command: " + command);
-    this->plotter.computeSteps(command);
-    this->printer.print("    Computed step count: ");
-    this->printer.println(this->plotter.getStepCount());
-    this->hasSteps = this->plotter.getStepCount() > 0;
-    this->printer.print("    Has Steps: ");
-    this->printer.println(this->hasSteps);
+    statusUpdater.status(drawing, str + (commandIndex) + ": " + command);
+
+    this->executeCommand(command);
   }
 
-  if (this->hasSteps)
+  if (hasSteps)
   {
-    this->hasSteps = plotter.step();
+    hasSteps = plotter.step();
   }
+}
+
+void PlotterController::executeCommand(String& command) {
+  const char chr = command.charAt(0);
+
+  switch (chr) {
+    case 'D':
+    case 'd':
+      setDebug(command);
+      break;
+    case 'H':
+    case 'h':
+      printer.println(PolarPlotter::getHelpMessage());
+      break;
+    case 'W':
+    case 'w':
+      printer.println("Executing wipe");
+      plotter.executeWipe();
+      break;
+    default:
+      printer.print("Computing steps for command ");
+      printer.print(commandIndex);
+      printer.print(": ");
+      printer.println(command);
+      plotter.computeSteps(command);
+      printer.print("    Computed step count: ");
+      printer.println(plotter.getStepCount());
+      hasSteps = plotter.getStepCount() > 0;
+      printer.print("    Has Steps: ");
+      printer.println(hasSteps);
+      break;
+  }
+}
+
+void PlotterController::setDebug(String& command) {
+  int debug = command.substring(1).toInt();
+  printer.print("Setting debug to ");
+  printer.println(debug);
+  plotter.setDebug(debug);
+}
+
+bool PlotterController::canCycle()
+{
+  return hasSteps || !this->needsCommands();
 }
 
 bool PlotterController::needsCommands()
 {
-  return this->commandIndex >= this->commandCount;
+  return commandIndex >= commandCount;
 }
 
 void PlotterController::newDrawing(String &drawing)
 {
-  this->commandIndex = 0;
-  this->commandCount = 0;
+  commandIndex = 0;
+  commandCount = 0;
   this->drawing = drawing;
-  this->statusUpdater.status("WIPING");
-  this->printer.println("Executing wipe");
-  this->plotter.executeWipe();
+#ifndef __IN_TEST__
+  statusUpdater.status("WIPING");
+  printer.println("Executing wipe");
+  plotter.executeWipe();
+#endif
 }
 
 void PlotterController::addCommand(String &command)
 {
-  if (this->commandCount < MAX_COMMAND_COUNT)
+  if (commandCount < MAX_COMMAND_COUNT)
   {
-    this->commands[this->commandCount++] = command;
+    commands[commandCount++] = command;
   }
 }

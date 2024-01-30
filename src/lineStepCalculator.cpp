@@ -32,42 +32,33 @@ LineStepCalculator::LineStepCalculator(Print &printer, float radiusStepSize, flo
 
 void LineStepCalculator::addLineSteps(Point &start, Point &finish, StepBank &steps)
 {
-  orientEndPoint(start, finish);
+  computeLineProperties(start, finish);
 
-  float startA = start.getAzimuth();
-  float radiusStepOffset = finish.getRadius() > start.getRadius() ? this->radiusStepSize : (-1 * this->radiusStepSize);
-  float azimuthStepOffset = finish.getAzimuth() > startA ? this->azimuthStepSize : (-1 * this->azimuthStepSize);
-  int radiusSteps = round(abs(finish.getRadius() - start.getRadius()) / this->radiusStepSize);
-  int azimuthSteps = round(abs(finish.getAzimuth() - startA) / this->azimuthStepSize);
+  showLine(" Going", true, start, finish, radiusSteps, azimuthSteps, radiusStepOffset, azimuthStepOffset);
 
-  if (this->debugLevel >= 2)
+  handleDirectChanges(start, finish, steps);
+
+  if (radiusSteps == 0 && azimuthSteps == 0)
   {
-    this->printer.print(" Going from (");
-    this->printer.print(start.getX(), 4);
-    this->printer.print(",");
-    this->printer.print(start.getY(), 4);
-    this->printer.print(",");
-    this->printer.print(start.getRadius(), 4);
-    this->printer.print(",");
-    this->printer.print(start.getAzimuth(), 4);
-    this->printer.print(") to (");
-    this->printer.print(finish.getX(), 4);
-    this->printer.print(",");
-    this->printer.print(finish.getY(), 4);
-    this->printer.print(",");
-    this->printer.print(finish.getRadius(), 4);
-    this->printer.print(",");
-    this->printer.print(finish.getAzimuth(), 4);
-    this->printer.print(") in ");
-    this->printer.print(radiusSteps);
-    this->printer.print(" radius steps and ");
-    this->printer.print(azimuthSteps);
-    this->printer.print(" azimuth steps with a radius step offset of ");
-    this->printer.print(radiusStepOffset, 4);
-    this->printer.print(" and an azimuth step offset of ");
-    this->printer.println(azimuthStepOffset, 4);
+    return;
   }
 
+  determineMiddle(start, finish);
+  addCompoundStepsForLine(steps, start, this->middle, startA);
+  addCompoundStepsForLine(steps, this->middle, finish, this->middle.getAzimuth());
+}
+
+void LineStepCalculator::computeLineProperties(Point &start, Point &finish) {
+  orientEndPoint(start, finish);
+
+  startA = start.getAzimuth();
+  radiusStepOffset = finish.getRadius() > start.getRadius() ? this->radiusStepSize : (-1 * this->radiusStepSize);
+  azimuthStepOffset = finish.getAzimuth() > startA ? this->azimuthStepSize : (-1 * this->azimuthStepSize);
+  radiusSteps = round(abs(finish.getRadius() - start.getRadius()) / this->radiusStepSize);
+  azimuthSteps = round(abs(finish.getAzimuth() - startA) / this->azimuthStepSize);
+}
+
+void LineStepCalculator::handleDirectChanges(Point &start, Point &finish, StepBank &steps) {
   // If we are at the origin, make sure we are pointed in the right direction before heading out
   if (azimuthSteps > 0 && abs(start.getRadius()) <= (this->radiusStepSize * 0.1))
   {
@@ -77,27 +68,22 @@ void LineStepCalculator::addLineSteps(Point &start, Point &finish, StepBank &ste
   }
 
   // If we are pointed in the right direction, just push in/out to where we need to go
-  if (radiusSteps > 0 && abs(finish.getAzimuth() - startA) <= (this->azimuthStepSize * 0.1))
+  if (radiusSteps > 0 && azimuthSteps == 0)
   {
     addBulkSteps(steps, radiusStepOffset, 0, radiusSteps);
-    return;
+    radiusSteps = 0;
   }
+}
 
-  if (radiusSteps == 0 && azimuthSteps == 0)
-  {
-    return;
-  }
-
+void LineStepCalculator::determineMiddle(Point &start, Point &finish) {
   // Draw the line in two section, to better handle line drawing
   this->middle.cartesianRepoint((start.getX() + finish.getX()) / 2, (start.getY() + finish.getY()) / 2);
   orientEndPoint(start, this->middle);
-  addCompoundStepsForLine(steps, start, this->middle, startA);
-  addCompoundStepsForLine(steps, this->middle, finish, this->middle.getAzimuth());
 }
 
 void LineStepCalculator::setDebug(unsigned int level)
 {
-  this->debugLevel = level;
+  debugLevel = level;
 }
 
 void LineStepCalculator::addBulkSteps(StepBank &steps, float radiusStepOffset, float azimuthStepOffset, int stepCount)
@@ -130,7 +116,8 @@ void LineStepCalculator::addCompoundStepsForLine(StepBank &steps, Point &start, 
   int majorSteps = moreRadiusSteps ? radiusSteps : azimuthSteps;
   int minorStep = 0;
 
-  showLine(start, finish, radiusSteps, azimuthSteps, radiusStepOffset, azimuthStepOffset, xDelta, yDelta, distanceDenominator);
+  showLine("  Compound steps", false, start, finish, radiusSteps, azimuthSteps, radiusStepOffset, azimuthStepOffset);
+  showDeltas(xDelta, yDelta, distanceDenominator);
 
   float lastDist = sqrt(xDelta * xDelta + yDelta * yDelta);
   for (int majorStep = 0; majorStep <= majorSteps;)
@@ -215,94 +202,107 @@ void LineStepCalculator::addCompoundStepsForLine(StepBank &steps, Point &start, 
   }
 }
 
-void LineStepCalculator::showLine(Point &start, Point &finish, int radiusSteps, int azimuthSteps, float radiusStepOffset, float azimuthStepOffset, float xDelta, float yDelta, float distanceDenominator)
+void LineStepCalculator::showLine(String prefix, bool fullLine, Point &start, Point &finish, int radiusSteps, int azimuthSteps, float radiusStepOffset, float azimuthStepOffset)
 {
-  if (this->debugLevel < 2)
+  if (debugLevel < 2)
   {
     return;
   }
 
-  this->printer.print("  Compound steps from", start);
-  this->printer.print(" to", finish);
-  this->printer.print(", radiusSteps=");
-  this->printer.print(radiusSteps);
-  this->printer.print(", azimuthSteps=");
-  this->printer.print(azimuthSteps);
-  this->printer.print(", radiusStepOffset=");
-  this->printer.print(radiusStepOffset, 4);
-  this->printer.print(", azimuthStepOffset=");
-  this->printer.print(azimuthStepOffset, 4);
-  this->printer.print(", xDelta=");
-  this->printer.print(xDelta, 4);
-  this->printer.print(", yDelta=");
-  this->printer.print(yDelta, 4);
-  this->printer.print(", distanceDenominator=");
-  this->printer.println(distanceDenominator, 4);
+  printer.print(prefix);
+  printer.print(" from", start);
+  printer.print(" to", finish);
+  printer.print(", radiusSteps=");
+  printer.print(radiusSteps);
+  printer.print(", azimuthSteps=");
+  printer.print(azimuthSteps);
+  printer.print(", radiusStepOffset=");
+  printer.print(radiusStepOffset, 4);
+  printer.print(", azimuthStepOffset=");
+  printer.print(azimuthStepOffset, 4);
+  if (fullLine) {
+    printer.println();
+  }
+}
+
+void LineStepCalculator::showDeltas(float xDelta, float yDelta, float distanceDenominator)
+{
+  if (debugLevel < 2)
+  {
+    return;
+  }
+
+  printer.print(", xDelta=");
+  printer.print(xDelta, 4);
+  printer.print(", yDelta=");
+  printer.print(yDelta, 4);
+  printer.print(", distanceDenominator=");
+  printer.println(distanceDenominator, 4);
 }
 
 void LineStepCalculator::showPoints(Point &kpMinIncMajP, Point &incMinIncMajP, Point &incMinKpMajP, Point &decMinIncMajP, Point &decMinKpMajP)
 {
-  if (this->debugLevel < 3)
+  if (debugLevel < 3)
   {
     return;
   }
 
-  this->printer.print("   ");
-  this->printer.print("KeepMinorIncrementMajorPoint", kpMinIncMajP);
-  this->printer.print("; ");
-  this->printer.print("IncrementMinorIncrementMajorPoint", incMinIncMajP);
-  this->printer.print("; ");
-  this->printer.print("IncrementMinorKeepMajorPoint", incMinKpMajP);
-  this->printer.print("; ");
-  this->printer.print("DecrementMinorIncrementMajorPoint", decMinIncMajP);
-  this->printer.print("; ");
-  this->printer.print("DecrementMinorKeepMajorPoint", decMinKpMajP);
-  this->printer.println("");
+  printer.print("   ");
+  printer.print("KeepMinorIncrementMajorPoint", kpMinIncMajP);
+  printer.print("; ");
+  printer.print("IncrementMinorIncrementMajorPoint", incMinIncMajP);
+  printer.print("; ");
+  printer.print("IncrementMinorKeepMajorPoint", incMinKpMajP);
+  printer.print("; ");
+  printer.print("DecrementMinorIncrementMajorPoint", decMinIncMajP);
+  printer.print("; ");
+  printer.print("DecrementMinorKeepMajorPoint", decMinKpMajP);
+  printer.println("");
 }
 
 void LineStepCalculator::showDistances(String prefix, String distanceToWhere, float kpMinIncMajDist, float incMinIncMajDist, float incMinKpMajDist, float decMinIncMajDist, float decMinKpMajDist)
 {
-  if (this->debugLevel < 4)
+  if (debugLevel < 4)
   {
     return;
   }
 
-  this->printer.print(prefix);
-  this->printer.print("KeepMinorIncrementMajorDistanceTo");
-  this->printer.print(distanceToWhere);
-  this->printer.print("=");
-  this->printer.print(kpMinIncMajDist, 4);
-  this->printer.print(", IncrementMinorIncrementMajorDistanceTo");
-  this->printer.print(distanceToWhere);
-  this->printer.print("=");
-  this->printer.print(incMinIncMajDist, 4);
-  this->printer.print(", IncrementMinorKeepMajorDistanceTo");
-  this->printer.print(distanceToWhere);
-  this->printer.print("=");
-  this->printer.print(incMinKpMajDist, 4);
-  this->printer.print(", DecrementMinorIncrementMajorDistanceTo");
-  this->printer.print(distanceToWhere);
-  this->printer.print("=");
-  this->printer.print(decMinIncMajDist, 4);
-  this->printer.print(", DecrementMinorKeepMajorDistanceTo");
-  this->printer.print(distanceToWhere);
-  this->printer.print("=");
-  this->printer.print(decMinKpMajDist, 4);
+  printer.print(prefix);
+  printer.print("KeepMinorIncrementMajorDistanceTo");
+  printer.print(distanceToWhere);
+  printer.print("=");
+  printer.print(kpMinIncMajDist, 4);
+  printer.print(", IncrementMinorIncrementMajorDistanceTo");
+  printer.print(distanceToWhere);
+  printer.print("=");
+  printer.print(incMinIncMajDist, 4);
+  printer.print(", IncrementMinorKeepMajorDistanceTo");
+  printer.print(distanceToWhere);
+  printer.print("=");
+  printer.print(incMinKpMajDist, 4);
+  printer.print(", DecrementMinorIncrementMajorDistanceTo");
+  printer.print(distanceToWhere);
+  printer.print("=");
+  printer.print(decMinIncMajDist, 4);
+  printer.print(", DecrementMinorKeepMajorDistanceTo");
+  printer.print(distanceToWhere);
+  printer.print("=");
+  printer.print(decMinKpMajDist, 4);
 }
 
 void LineStepCalculator::showLastDistanceAndSteps(float lastDist, int minorStep, int majorStep)
 {
-  if (this->debugLevel < 4)
+  if (debugLevel < 4)
   {
     return;
   }
 
-  this->printer.print(", NextLastDistanceToFinish=");
-  this->printer.print(lastDist, 4);
-  this->printer.print(", MinorStep=");
-  this->printer.print(minorStep);
-  this->printer.print(", MajorStep=");
-  this->printer.println(majorStep);
+  printer.print(", NextLastDistanceToFinish=");
+  printer.print(lastDist, 4);
+  printer.print(", MinorStep=");
+  printer.print(minorStep);
+  printer.print(", MajorStep=");
+  printer.println(majorStep);
 }
 
 void LineStepCalculator::addStep(StepBank &steps, float radiusStepOffset, int radiusStepIncrement, float azimuthStepOffset, int azimuthStepIncrement)
@@ -310,16 +310,16 @@ void LineStepCalculator::addStep(StepBank &steps, float radiusStepOffset, int ra
   int radiusStep = getStepValue(radiusStepOffset, radiusStepIncrement);
   int azimuthStep = getStepValue(azimuthStepOffset, azimuthStepIncrement);
 
-  if (this->debugLevel >= 4)
+  if (debugLevel >= 4)
   {
-    this->printer.print("    RadiusStepIncrement=");
-    this->printer.print(radiusStepIncrement, 4);
-    this->printer.print(", RadiusStep=");
-    this->printer.print(radiusStep, 4);
-    this->printer.print(", AzimuthStepIncrement=");
-    this->printer.print(azimuthStepIncrement, 4);
-    this->printer.print(", AzimuthStep=");
-    this->printer.println(azimuthStep, 4);
+    printer.print("    RadiusStepIncrement=");
+    printer.print(radiusStepIncrement, 4);
+    printer.print(", RadiusStep=");
+    printer.print(radiusStep, 4);
+    printer.print(", AzimuthStepIncrement=");
+    printer.print(azimuthStepIncrement, 4);
+    printer.print(", AzimuthStep=");
+    printer.println(azimuthStep, 4);
   }
 
   steps.addStep(radiusStep, azimuthStep);

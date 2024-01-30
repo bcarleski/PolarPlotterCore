@@ -30,12 +30,12 @@ ExtendedPrinter::ExtendedPrinter(Print &printer)
 
 size_t ExtendedPrinter::write(uint8_t c)
 {
-    this->printer.write(c);
+    return this->printer.write(c);
 }
 
 size_t ExtendedPrinter::write(const uint8_t *str, size_t len)
 {
-    this->printer.write(str, len);
+    return this->printer.write(str, len);
 }
 
 void ExtendedPrinter::print(const char name[], const Point &value)

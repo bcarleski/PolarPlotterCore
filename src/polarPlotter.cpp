@@ -54,7 +54,8 @@ void PolarPlotter::computeSteps(String &command)
 
   if (this->debugLevel >= 1)
   {
-    this->printer.println(" COMMAND - " + command);
+    this->printer.print(" COMMAND - ");
+    this->printer.println(command);
     this->statusUpdater.status("COMMAND", command);
   }
 
@@ -245,7 +246,9 @@ bool PolarPlotter::executeStep(const bool fastStep)
     String msg = "";
     msg = msg + radiusStep + "," + azimuthStep;
     this->printer.print("STEP: ");
-    this->printer.println(head + " " + msg);
+    this->printer.print(radiusStep);
+    this->printer.print(",");
+    this->printer.println(azimuthStep);
     this->statusUpdater.status(head, msg);
   }
   if ((radiusStep != 0 || azimuthStep != 0) && this->stepper)
@@ -294,8 +297,8 @@ void PolarPlotter::setDebug(unsigned int level)
   this->steps.setDebug(level);
   if (level > 0)
   {
-    String msg = " Set debug level to ";
-    this->printer.println(msg + level);
+    this->printer.print(" Set debug level to ");
+    this->printer.println(level);
   }
 }
 

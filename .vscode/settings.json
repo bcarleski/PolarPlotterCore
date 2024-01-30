@@ -11,6 +11,8 @@
         "ratio": "cpp",
         "system_error": "cpp",
         "tuple": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "string": "cpp",
+        "iostream": "cpp"
     }
 }
