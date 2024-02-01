@@ -31,6 +31,7 @@ PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float ma
       azimuthStepSize(azimuthStepSize),
       marbleSizeInRadiusSteps(marbleSizeInRadiusSteps),
       lineStepper(LineStepper(radiusStepSize, azimuthStepSize)),
+      circleStepper(CircleStepper(radiusStepSize, azimuthStepSize)),
       currentStepper(NULL)
 {
 }
@@ -42,8 +43,7 @@ void PolarPlotter::onStep(void stepper(const int radiusSteps, const int azimuthS
 
 void PolarPlotter::init(float startingRadius, float startingAzimuth)
 {
-  this->finish.repoint(startingRadius, startingAzimuth);
-  this->position.cloneFrom(this->finish);
+  this->position.repoint(startingRadius, startingAzimuth);
 }
 
 void PolarPlotter::startCommand(String &command)
@@ -62,9 +62,16 @@ void PolarPlotter::startCommand(String &command)
   case 'l':
   case 'L':
     currentStepper = &lineStepper;
-    this->setFinishPoint(command);
-    lineStepper.startNewLine(this->position, this->finish);
     break;
+  case 'c':
+  case 'C':
+    currentStepper = &circleStepper;
+    break;
+  }
+
+  if (currentStepper != NULL) {
+    String arguments = command.substring(1);
+    currentStepper->startNewLine(position, arguments);
   }
 
   if (this->debugLevel >= 2)
@@ -73,36 +80,6 @@ void PolarPlotter::startCommand(String &command)
     this->printer.println(currentStepper != NULL);
     this->printer.print(" HAS STEPS: ");
     this->printer.println(this->hasNextStep());
-    if (this->hasNextStep()) {
-      this->printer.println("    From", this->position);
-      this->printer.println("    To", this->finish);
-    }
-  }
-}
-
-void PolarPlotter::setFinishPoint(String &command)
-{
-  int commaIndex = command.indexOf(',');
-  float rawX = command.substring(1, commaIndex).toFloat();
-  float rawY = command.substring(commaIndex + 1).toFloat();
-  float rawR = sqrt(rawX * rawX + rawY * rawY);
-  float rawA = atan2(rawY, rawX);
-  float radius = round(rawR / this->radiusStepSize) * this->radiusStepSize;
-  float azimuth = round(rawA / this->azimuthStepSize) * this->azimuthStepSize;
-
-  this->finish.repoint(radius, azimuth);
-  if (this->debugLevel >= 3)
-  {
-    this->printer.print("   Raw Finish=(");
-    this->printer.print(rawX, 4);
-    this->printer.print(", ");
-    this->printer.print(rawY, 4);
-    this->printer.print(", ");
-    this->printer.print(rawR, 4);
-    this->printer.print(", ");
-    this->printer.print(rawA, 4);
-    this->printer.println(")");
-    this->printer.println("   Set Finish", this->finish);
   }
 }
 
@@ -178,7 +155,6 @@ void PolarPlotter::executeWipe()
   }
 
   this->position.repoint(0, 0);
-  this->finish.repoint(0, 0);
 }
 
 bool PolarPlotter::hasNextStep()

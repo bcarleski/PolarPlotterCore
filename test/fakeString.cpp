@@ -53,6 +53,11 @@ int String::indexOf(char c) const {
   return pch - cstr;
 }
 
+int String::indexOf(char ch, unsigned int fromIndex) const {
+  const char *pch = strchr(cstr + fromIndex, ch);
+  return pch - cstr;
+}
+
 String String::substring( unsigned int beginIndex, unsigned int endIndex ) const {
   char substr[1024];
   strlcpy(substr, cstr + beginIndex, endIndex - beginIndex + 1);

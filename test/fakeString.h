@@ -29,6 +29,7 @@ public:
     const char* c_str() const;
     char charAt(unsigned int index) const;
     int indexOf(char c) const;
+	int indexOf( char ch, unsigned int fromIndex ) const;
     String substring( unsigned int beginIndex ) const { return substring(beginIndex, this->length); };
 	String substring( unsigned int beginIndex, unsigned int endIndex ) const;
     float toFloat() const;

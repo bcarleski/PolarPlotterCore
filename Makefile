@@ -7,6 +7,7 @@ SOURCES = test/runtests.cpp \
           src/step.cpp \
           src/extendedPrinter.cpp \
           src/baseStepper.cpp \
+          src/circleStepper.cpp \
           src/lineStepper.cpp \
           src/polarPlotter.cpp \
           src/plotterController.cpp

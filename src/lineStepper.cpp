@@ -28,27 +28,20 @@ LineStepper::LineStepper(float radiusStepSize, float azimuthStepSize)
 {
 }
 
-void LineStepper::startNewLine(Point &currentPosition, Point &finish) {
-    deltaX = finish.getX() - currentPosition.getX();
-    deltaY = finish.getY() - currentPosition.getY();
+bool LineStepper::parseArguments(Point &currentPosition, String &arguments) {
+    int comma = arguments.indexOf(',');
+    if (comma <= 0) return false;
 
-    BaseStepper::startNewLine(currentPosition, finish);
-}
+    float finishX = arguments.substring(0, comma).toFloat();
+    float finishY = arguments.substring(comma + 1).toFloat();
+    deltaX = finishX - currentPosition.getX();
+    deltaY = finishY - currentPosition.getY();
 
-void LineStepper::determineNextPositionAndDistance() {
-    // If we are at the center and need to rotate towards the end, we shouldn't use the default calculation to determine next position
-    if (currentPosition.getRadius() > (radiusStepSize * 0.1) || abs(finish.getAzimuth() - currentPosition.getAzimuth()) < (azimuthStepSize * 0.1)) {
-        BaseStepper::determineNextPositionAndDistance();
-        return;
-    }
+    finish.cartesianRepoint(finishX, finishY);
+    this->orientPoint(currentPosition, finish);
+    this->snapPointToClosestPossiblePosition(finish);
 
-    nextDistanceToFinish = currentDistanceToFinish;
-
-    if (finish.getAzimuth() > currentPosition.getAzimuth()) {
-        nextPosition.repoint(currentPosition.getRadius(), currentPosition.getAzimuth() + azimuthStepSize);
-    } else {
-        nextPosition.repoint(currentPosition.getRadius(), currentPosition.getAzimuth() - azimuthStepSize);
-    }
+    return true;
 }
 
 float LineStepper::findDistanceFromPointOnLineToFinish(Point &point)
@@ -61,7 +54,11 @@ void LineStepper::setClosestPointOnLine(Point &point, Point &closestPoint)
     float startToFinishSquared = deltaX * deltaX + deltaY * deltaY;
     float startToPointDotStartToFinish = (point.getX() - start.getX()) * deltaX + (point.getY() - start.getY()) * deltaY;
     float normalizedDistanceFromStart = startToPointDotStartToFinish / startToFinishSquared;
-    float fullCircle = PI * 2;
 
     closestPoint.cartesianRepoint(start.getX() + deltaX * normalizedDistanceFromStart, start.getY() + deltaY * normalizedDistanceFromStart);
+}
+
+float LineStepper::determineStartingAzimuthFromCenter()
+{
+    return finish.getAzimuth();
 }

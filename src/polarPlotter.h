@@ -25,6 +25,7 @@
 #define _POLARPLOTTERCORE_POLARPLOTTER_H_
 
 #include "lineStepper.h"
+#include "circleStepper.h"
 #include "extendedPrinter.h"
 #include "statusUpdate.h"
 
@@ -34,13 +35,13 @@ private:
   ExtendedPrinter printer;
   StatusUpdate &statusUpdater;
   LineStepper lineStepper;
+  CircleStepper circleStepper;
   BaseStepper *currentStepper;
   Step emptyStep;
 
   void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
   unsigned int debugLevel;
   Point position;
-  Point finish;
   float maxRadius;
   float radiusStepSize;
   float azimuthStepSize;
@@ -49,7 +50,6 @@ private:
   void executeStepsToCenter();
   void executeRadiusSteps(int radiusSteps);
   void executeFullCircleSteps();
-  void setFinishPoint(String &command);
   void executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep);
 
 public:

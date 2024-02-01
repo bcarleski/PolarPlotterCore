@@ -21,16 +21,18 @@
     SOFTWARE.
 */
 
-#ifndef _POLARPLOTTERCORE_LINESTEPPER_H_
-#define _POLARPLOTTERCORE_LINESTEPPER_H_
+#ifndef _POLARPLOTTERCORE_CIRCLESTEPPER_H_
+#define _POLARPLOTTERCORE_CIRCLESTEPPER_H_
 
 #include "baseStepper.h"
 
-class LineStepper : public BaseStepper
+class CircleStepper : public BaseStepper
 {
 private:
-    float deltaX;
-    float deltaY;
+    Point center;
+    float radius;
+    float middleToFinish;
+    Point middle;
     Point finish;
 
 protected:
@@ -40,7 +42,7 @@ protected:
     float determineStartingAzimuthFromCenter();
 
 public:
-  LineStepper(float radiusStepSize, float azimuthStepSize);
+  CircleStepper(float radiusStepSize, float azimuthStepSize);
 };
 
 #endif

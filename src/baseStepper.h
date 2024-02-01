@@ -41,7 +41,7 @@ protected:
     const float azimuthStepSize;
 
     Point start;
-    Point finish;
+    float startingAzimuth;
 
     Point currentPosition;
     Step currentStep;
@@ -64,15 +64,18 @@ protected:
     virtual void setupNextPoints();
     virtual void findNextClosestPointsOnLine();
     virtual void findPointsCloserToFinish();
-    virtual void orientEndPoint(Point &start, Point &end);
+    virtual void orientPoint(Point &referencePoint, Point &pointToOrient);
+    virtual void snapPointToClosestPossiblePosition(Point &point);
     virtual float findDistanceBetweenPoints(Point &first, Point &second);
 
+    virtual bool parseArguments(Point &currentPosition, String &arguments) = 0;
     virtual float findDistanceFromPointOnLineToFinish(Point &point) = 0;
     virtual void setClosestPointOnLine(Point &point, Point &closestPoint) = 0;
+    virtual float determineStartingAzimuthFromCenter() = 0;
 
 public:
     BaseStepper(float radiusStepSize, float azimuthStepSize);
-    virtual void startNewLine(Point &currentPosition, Point &finish);
+    virtual void startNewLine(Point &currentPosition, String &arguments);
     virtual bool hasStep();
     virtual Step& step();
 };
