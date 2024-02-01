@@ -30,6 +30,11 @@ PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater
 {
 }
 
+void PlotterController::onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep))
+{
+  plotter.onStep(stepper);
+}
+
 void PlotterController::performCycle()
 {
   if (!plotter.hasNextStep())

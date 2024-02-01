@@ -46,6 +46,7 @@ private:
 
 public:
   PlotterController(Print &printer, StatusUpdate &statusUpdater, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps);
+  void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
   void performCycle();
   bool canCycle();
   void newDrawing(String &drawing);
