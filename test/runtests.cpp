@@ -20,36 +20,12 @@
 
 using namespace std;
 
-void run_tests(Print &print, Point &start, Point &finish, LineStepCalculator &calc, int debug) {
-    StepBank steps(print);
-
-    if (debug > 0) {
-        cout << "Setting debug level to " << debug << "\n";
-        steps.setDebug(debug);
-        calc.setDebug(debug);
-    }
-    calc.addLineSteps(start, finish, steps);
-
-    cout << "Got " << steps.getStepCount() << " steps\n";
-    if (debug >= 3) {
-        for (int i = 0; i < steps.getStepCount(); i++) {
-            Step s = steps.getStep(i);
-            cout << "Step (";
-            cout << s.getRadiusStep();
-            cout << ", ";
-            cout << s.getAzimuthStep();
-            cout << ")\n";
-        }
-    }
-}
-
 int main(int argc, char **argv) {
     initialize_mock_arduino();
 
     Print print;
     StatusUpdater status;
-    PolarPlotter plotter(print, status, MAX_RADIUS, RADIUS_STEP_SIZE, AZIMUTH_STEP_SIZE, MARBLE_SIZE_IN_RADIUS_STEPS);
-    PlotterController controller(print, status, plotter);
+    PlotterController controller(print, status, MAX_RADIUS, RADIUS_STEP_SIZE, AZIMUTH_STEP_SIZE, MARBLE_SIZE_IN_RADIUS_STEPS);
     String drawing("TestDrawing");
 
     cout << "Initializing MAX_RADIUS: " << MAX_RADIUS << "\n";

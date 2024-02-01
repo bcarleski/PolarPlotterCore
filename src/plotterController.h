@@ -34,10 +34,9 @@ class PlotterController
 private:
   Print &printer;
   StatusUpdate &statusUpdater;
-  PolarPlotter &plotter;
+  PolarPlotter plotter;
   String drawing;
   String commands[MAX_COMMAND_COUNT];
-  bool hasSteps;
   int commandCount;
   int commandIndex;
 
@@ -46,7 +45,7 @@ private:
   void setDebug(String& command);
 
 public:
-  PlotterController(Print &printer, StatusUpdate &statusUpdater, PolarPlotter &);
+  PlotterController(Print &printer, StatusUpdate &statusUpdater, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps);
   void performCycle();
   bool canCycle();
   void newDrawing(String &drawing);

@@ -24,22 +24,18 @@
 #ifndef _POLARPLOTTERCORE_STEP_H_
 #define _POLARPLOTTERCORE_STEP_H_
 
-#ifndef __IN_TEST__
-#include <Arduino.h>
-#else
-#include "mockArduino.h"
-#endif
-
 class Step
 {
 private:
-  byte state;
+  unsigned char state;
 
 public:
   Step();
   void setSteps(int radiusStep, int azimuthStep);
+  void setSteps(Step &other);
   int getRadiusStep() const;
   int getAzimuthStep() const;
+  bool hasStep() const;
 };
 
 #endif

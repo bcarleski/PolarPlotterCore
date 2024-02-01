@@ -24,7 +24,8 @@
 #ifndef _POLARPLOTTERCORE_POLARPLOTTER_H_
 #define _POLARPLOTTERCORE_POLARPLOTTER_H_
 
-#include "lineStepCalculator.h"
+#include "lineStepper.h"
+#include "extendedPrinter.h"
 #include "statusUpdate.h"
 
 class PolarPlotter
@@ -32,12 +33,12 @@ class PolarPlotter
 private:
   ExtendedPrinter printer;
   StatusUpdate &statusUpdater;
+  LineStepper lineStepper;
+  BaseStepper *currentStepper;
+  Step emptyStep;
+
   void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
-  LineStepCalculator lineStepCalculator;
-  StepBank steps;
-  unsigned int stepIndex;
   unsigned int debugLevel;
-  unsigned long stepStartMillis;
   Point position;
   Point finish;
   float maxRadius;
@@ -49,16 +50,16 @@ private:
   void executeRadiusSteps(int radiusSteps);
   void executeFullCircleSteps();
   void setFinishPoint(String &command);
-  bool executeStep(const bool fastStep);
+  void executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep);
 
 public:
   PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps);
   void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
   void init(float initialRadius, float initialAzimuth);
-  void computeSteps(String &command);
+  void startCommand(String &command);
   void executeWipe();
-  bool step();
-  unsigned int getStepCount() const;
+  bool hasNextStep();
+  void step();
   Point getPosition() const;
   void setDebug(unsigned int level);
   static String getHelpMessage();

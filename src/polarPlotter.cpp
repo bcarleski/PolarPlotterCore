@@ -30,8 +30,8 @@ PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float ma
       radiusStepSize(radiusStepSize),
       azimuthStepSize(azimuthStepSize),
       marbleSizeInRadiusSteps(marbleSizeInRadiusSteps),
-      steps(StepBank(printer)),
-      lineStepCalculator(LineStepCalculator(printer, radiusStepSize, azimuthStepSize))
+      lineStepper(LineStepper(radiusStepSize, azimuthStepSize)),
+      currentStepper(NULL)
 {
 }
 
@@ -46,39 +46,37 @@ void PolarPlotter::init(float startingRadius, float startingAzimuth)
   this->position.cloneFrom(this->finish);
 }
 
-void PolarPlotter::computeSteps(String &command)
+void PolarPlotter::startCommand(String &command)
 {
-  unsigned long startMillis = millis();
-  this->stepIndex = 0;
-  this->steps.reset();
-
+  currentStepper = NULL;
+ 
   if (this->debugLevel >= 1)
   {
-    this->printer.print(" COMMAND - ");
-    this->printer.println(command);
-    this->statusUpdater.status("COMMAND", command);
+    printer.print(" COMMAND - ");
+    printer.println(command);
+    statusUpdater.status("COMMAND", command);
   }
 
   switch (command.charAt(0))
   {
   case 'l':
   case 'L':
-    setFinishPoint(command);
-    this->lineStepCalculator.addLineSteps(this->position, this->finish, this->steps);
+    currentStepper = &lineStepper;
+    this->setFinishPoint(command);
+    lineStepper.startNewLine(this->position, this->finish);
     break;
   }
 
   if (this->debugLevel >= 2)
   {
-    unsigned long endMillis = millis();
-    long duration = endMillis - startMillis;
-    this->statusUpdater.status("COMPUTE DURATION", duration);
-    this->statusUpdater.status("COMPUTE STEPS", this->getStepCount());
-
-    this->printer.print(" STEPS - ");
-    this->printer.println(this->getStepCount());
-    this->printer.print(" DURATION - ");
-    this->printer.println(duration);
+    this->printer.print(" HAS STEPPER: ");
+    this->printer.println(currentStepper != NULL);
+    this->printer.print(" HAS STEPS: ");
+    this->printer.println(this->hasNextStep());
+    if (this->hasNextStep()) {
+      this->printer.println("    From", this->position);
+      this->printer.println("    To", this->finish);
+    }
   }
 }
 
@@ -93,6 +91,19 @@ void PolarPlotter::setFinishPoint(String &command)
   float azimuth = round(rawA / this->azimuthStepSize) * this->azimuthStepSize;
 
   this->finish.repoint(radius, azimuth);
+  if (this->debugLevel >= 3)
+  {
+    this->printer.print("   Raw Finish=(");
+    this->printer.print(rawX, 4);
+    this->printer.print(", ");
+    this->printer.print(rawY, 4);
+    this->printer.print(", ");
+    this->printer.print(rawR, 4);
+    this->printer.print(", ");
+    this->printer.print(rawA, 4);
+    this->printer.println(")");
+    this->printer.println("   Set Finish", this->finish);
+  }
 }
 
 void PolarPlotter::executeStepsToCenter()
@@ -113,28 +124,16 @@ void PolarPlotter::executeStepsToCenter()
 
   for (int i = 0; i < max; i++)
   {
-    this->steps.addStep(radiusSteps > i ? radiusOffset : 0, azimuthSteps > i ? azimuthOffset : 0);
+    this->executeStep(radiusSteps > i ? radiusOffset : 0, azimuthSteps > i ? azimuthOffset : 0, true);
   }
-
-  while (this->executeStep(true))
-    ;
-
-  this->stepIndex = 0;
-  this->steps.reset();
 }
 
 void PolarPlotter::executeRadiusSteps(int radiusSteps)
 {
   for (int i = 0; i < radiusSteps; i++)
   {
-    this->steps.addStep(1, 0);
+    this->executeStep(1, 0, true);
   }
-
-  while (this->executeStep(true))
-    ;
-
-  this->stepIndex = 0;
-  this->steps.reset();
 }
 
 void PolarPlotter::executeFullCircleSteps()
@@ -143,21 +142,12 @@ void PolarPlotter::executeFullCircleSteps()
 
   for (int i = 0; i < azimuthSteps; i++)
   {
-    this->steps.addStep(0, 1);
+    this->executeStep(0, 1, true);
   }
-
-  while (this->executeStep(true))
-    ;
-
-  this->stepIndex = 0;
-  this->steps.reset();
 }
 
 void PolarPlotter::executeWipe()
 {
-  this->stepIndex = 0;
-  this->steps.reset();
-
   if (this->debugLevel >= 1)
   {
     this->printer.println(" WIPING");
@@ -176,7 +166,7 @@ void PolarPlotter::executeWipe()
   {
     for (int j = 0; j < marbleSizeInRadiusSteps; j++)
     {
-      this->steps.addStep(-1, 0);
+      this->executeStep(-1, 0, true);
     }
 
     this->executeFullCircleSteps();
@@ -191,48 +181,32 @@ void PolarPlotter::executeWipe()
   this->finish.repoint(0, 0);
 }
 
-bool PolarPlotter::step()
+bool PolarPlotter::hasNextStep()
 {
-  return this->executeStep(false);
+  return currentStepper != NULL && currentStepper->hasStep();
+}
+void PolarPlotter::step()
+{
+  if (!this->hasNextStep()) {
+    return;
+  }
+
+  Step step = currentStepper->step();
+
+  return this->executeStep(step.getRadiusStep(), step.getAzimuthStep(), false);
 }
 
-bool PolarPlotter::executeStep(const bool fastStep)
+void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep)
 {
-  if (this->stepIndex < 0 || this->stepIndex >= this->steps.getStepCount())
-  {
-    if (this->stepStartMillis > 0)
-    {
-      if (this->debugLevel >= 2)
-      {
-        unsigned long endMillis = millis();
-        long duration = endMillis - this->stepStartMillis;
-
-        this->statusUpdater.status("STEP DURATION", duration);
-        this->printer.println(String(" STEPPING COMPLETE, Step=") + this->getStepCount() + ", Duration=" + duration);
-      }
-
-      this->stepStartMillis = 0;
-      this->position.cloneFrom(this->finish);
-    }
-
-    return false;
-  }
-
-  if (this->stepStartMillis == 0)
-  {
-    this->stepStartMillis = millis();
-  }
-
-  Step step = steps.getStep(this->stepIndex);
   Point pos = this->position;
   float oldRadius = pos.getRadius();
   float oldAzimuth = pos.getAzimuth();
-  float newRadiusDelta = step.getRadiusStep() * this->radiusStepSize;
-  float newAzimuthDelta = step.getAzimuthStep() * this->azimuthStepSize;
+  float newRadiusDelta = radiusSteps * this->radiusStepSize;
+  float newAzimuthDelta = azimuthSteps * this->azimuthStepSize;
   float newRadius = oldRadius + newRadiusDelta;
   float newAzimuth = oldAzimuth + newAzimuthDelta;
-  int radiusStep = step.getRadiusStep();
-  int azimuthStep = step.getAzimuthStep();
+  int radiusStep = radiusSteps;
+  int azimuthStep = azimuthSteps;
 
   if (newRadius >= this->maxRadius)
   {
@@ -241,22 +215,19 @@ bool PolarPlotter::executeStep(const bool fastStep)
 
   if (this->debugLevel >= 3)
   {
-    String head = "STEP ";
-    head = head + this->stepIndex + ":";
     String msg = "";
     msg = msg + radiusStep + "," + azimuthStep;
     this->printer.print("STEP: ");
     this->printer.print(radiusStep);
     this->printer.print(",");
     this->printer.println(azimuthStep);
-    this->statusUpdater.status(head, msg);
+    this->statusUpdater.status("STEP:", msg);
   }
   if ((radiusStep != 0 || azimuthStep != 0) && this->stepper)
   {
     this->stepper(radiusStep, azimuthStep, fastStep);
   }
   this->position.repoint(newRadius, newAzimuth);
-  this->stepIndex++;
 
   if (this->debugLevel >= 4)
   {
@@ -276,13 +247,6 @@ bool PolarPlotter::executeStep(const bool fastStep)
     this->printer.print(newAzimuth, 4);
     this->printer.println(")");
   }
-
-  return true;
-}
-
-unsigned int PolarPlotter::getStepCount() const
-{
-  return this->steps.getStepCount();
 }
 
 Point PolarPlotter::getPosition() const
@@ -293,8 +257,6 @@ Point PolarPlotter::getPosition() const
 void PolarPlotter::setDebug(unsigned int level)
 {
   this->debugLevel = level;
-  this->lineStepCalculator.setDebug(level);
-  this->steps.setDebug(level);
   if (level > 0)
   {
     this->printer.print(" Set debug level to ");

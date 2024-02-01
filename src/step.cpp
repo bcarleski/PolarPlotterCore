@@ -32,9 +32,14 @@ Step::Step()
   this->state = 0;
 }
 
+void Step::setSteps(Step &other)
+{
+  state = other.state;
+}
+
 void Step::setSteps(int radiusStep, int azimuthStep)
 {
-  byte state = 0;
+  unsigned char state = 0;
 
   if (radiusStep > 0)
   {
@@ -85,4 +90,9 @@ int Step::getAzimuthStep() const
   }
 
   return 0;
+}
+
+bool Step::hasStep() const
+{
+  return state != 0;
 }

@@ -23,16 +23,16 @@
 
 #include "plotterController.h"
 
-PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater, PolarPlotter &plotter)
+PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps)
     : printer(printer),
       statusUpdater(statusUpdater),
-      plotter(plotter)
+      plotter(PolarPlotter(printer, statusUpdater, maxRadius, radiusStepSize, azimuthStepSize, marbleSizeInRadiusSteps))
 {
 }
 
 void PlotterController::performCycle()
 {
-  if (!hasSteps)
+  if (!plotter.hasNextStep())
   {
     if (this->needsCommands()) return;
 
@@ -43,10 +43,7 @@ void PlotterController::performCycle()
     this->executeCommand(command);
   }
 
-  if (hasSteps)
-  {
-    hasSteps = plotter.step();
-  }
+  if (plotter.hasNextStep()) plotter.step();
 }
 
 void PlotterController::executeCommand(String& command) {
@@ -67,16 +64,13 @@ void PlotterController::executeCommand(String& command) {
       plotter.executeWipe();
       break;
     default:
-      printer.print("Computing steps for command ");
+      printer.print("Starting command ");
       printer.print(commandIndex);
       printer.print(": ");
       printer.println(command);
-      plotter.computeSteps(command);
-      printer.print("    Computed step count: ");
-      printer.println(plotter.getStepCount());
-      hasSteps = plotter.getStepCount() > 0;
+      plotter.startCommand(command);
       printer.print("    Has Steps: ");
-      printer.println(hasSteps);
+      printer.println(plotter.hasNextStep());
       break;
   }
 }
@@ -90,7 +84,7 @@ void PlotterController::setDebug(String& command) {
 
 bool PlotterController::canCycle()
 {
-  return hasSteps || !this->needsCommands();
+  return plotter.hasNextStep() || !this->needsCommands();
 }
 
 bool PlotterController::needsCommands()

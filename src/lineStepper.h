@@ -21,29 +21,25 @@
     SOFTWARE.
 */
 
-#ifndef _POLARPLOTTERCORE_STEPBANK_H_
-#define _POLARPLOTTERCORE_STEPBANK_H_
+#ifndef _POLARPLOTTERCORE_LINESTEPPER_H_
+#define _POLARPLOTTERCORE_LINESTEPPER_H_
 
-#include "step.h"
+#include "baseStepper.h"
 
-#define MAX_STEPS 8192
-
-class StepBank
+class LineStepper : public BaseStepper
 {
 private:
-  Print &printer;
-  Step blankStep;
-  Step steps[MAX_STEPS];
-  unsigned int stepCount;
-  unsigned int debugLevel;
+    float deltaX;
+    float deltaY;
+
+protected:
+    void determineNextPositionAndDistance();
+    float findDistanceFromPointOnLineToFinish(Point &point);
+    void setClosestPointOnLine(Point &point, Point &closestPoint);
 
 public:
-  StepBank(Print &printer);
-  void addStep(int radiusStep, int azimuthStep);
-  Step getStep(unsigned int stepIndex);
-  unsigned int getStepCount() const;
-  void reset();
-  void setDebug(unsigned int level);
+  LineStepper(float radiusStepSize, float azimuthStepSize);
+  void startNewLine(Point &currentPosition, Point &finish);
 };
 
 #endif

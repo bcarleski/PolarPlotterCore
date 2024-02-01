@@ -3,13 +3,13 @@ SOURCES = test/runtests.cpp \
           test/fakePrint.cpp \
           test/fakeStatus.cpp \
           test/mockArduino.cpp \
-          src/extendedPrinter.cpp \
-          src/lineStepCalculator.cpp \
-          src/plotterController.cpp \
           src/point.cpp \
-          src/polarPlotter.cpp \
           src/step.cpp \
-          src/stepBank.cpp
+          src/extendedPrinter.cpp \
+          src/baseStepper.cpp \
+          src/lineStepper.cpp \
+          src/polarPlotter.cpp \
+          src/plotterController.cpp
 
 OBJECTS := $(addsuffix .o, $(addprefix .build/, $(basename $(SOURCES))))
 DEPFILES := $(subst .o,.dep, $(subst .build/,.deps/, $(OBJECTS)))
