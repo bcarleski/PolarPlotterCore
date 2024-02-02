@@ -22,9 +22,6 @@
 */
 
 #include "baseStepper.h"
-#ifdef __IN_TEST__
-#include <iostream>
-#endif
 
 BaseStepper::BaseStepper(float radiusStepSize, float azimuthStepSize)
   : radiusStepSize(radiusStepSize),
@@ -47,10 +44,11 @@ Step &BaseStepper::step() {
 }
 
 void BaseStepper::startNewLine(Point &currentPosition, String &arguments) {
+    this->snapPointToClosestPossiblePosition(currentPosition);
     this->start.cloneFrom(currentPosition);
     this->currentPosition.cloneFrom(currentPosition);
 
-    if (!this->parseArguments(currentPosition, arguments)) {
+    if (!this->parseArgumentsAndSetFinish(currentPosition, arguments)) {
         currentDistanceToFinish = 0;
         currentStep.setSteps(0, 0);
         nextStep.setSteps(0, 0);
@@ -63,9 +61,9 @@ void BaseStepper::startNewLine(Point &currentPosition, String &arguments) {
 
     // If we are at the center and need to rotate towards the end, we shouldn't use the default calculation to determine next position
     if (currentPosition.getRadius() < (radiusStepSize * 0.1)) {
-        startingAzimuth = this->determineStartingAzimuthFromCenter();
+        originExitAzimuth = this->determineStartingAzimuthFromCenter();
     } else {
-        startingAzimuth = currentPosition.getAzimuth();
+        originExitAzimuth = currentPosition.getAzimuth();
     }
 
     currentStep.setSteps(1, 1);
@@ -80,14 +78,17 @@ void BaseStepper::computeNextStep() {
 }
 
 void BaseStepper::determineNextPositionAndDistance() {
-    if (currentPosition.getRadius() < (radiusStepSize * 0.1) && abs(startingAzimuth - currentPosition.getAzimuth()) > (azimuthStepSize * 0.1)) {
-        if (startingAzimuth > currentPosition.getAzimuth()) {
-            nextPosition.repoint(currentPosition.getRadius(), currentPosition.getAzimuth() + azimuthStepSize);
-        } else {
-            nextPosition.repoint(currentPosition.getRadius(), currentPosition.getAzimuth() - azimuthStepSize);
-        }
-
+    // If we are at the origin and aren't pointed in the right direction, repoint
+    if (currentPosition.getRadius() < (radiusStepSize * 0.1) && abs(originExitAzimuth - currentPosition.getAzimuth()) > (azimuthStepSize * 0.5)) {
+        nextPosition.repoint(currentPosition.getRadius(), currentPosition.getAzimuth() + (azimuthStepSize * (originExitAzimuth > currentPosition.getAzimuth() ? 1 : -1)));
         nextDistanceToFinish = currentDistanceToFinish;
+        return;
+    }
+
+    if (abs(currentPosition.getRadius() - finish.getRadius()) <= (radiusStepSize * 0.5) && abs(currentPosition.getAzimuth() - finish.getAzimuth()) <= (azimuthStepSize * 0.5)) {
+        nextPosition.cloneFrom(currentPosition);
+        nextStep.setSteps(0, 0);
+        nextDistanceToFinish = 0;
         return;
     }
 
@@ -117,9 +118,13 @@ void BaseStepper::determineNextPositionAndDistance() {
 
     nextPosition.cloneFrom(closestPointToLine);
     nextDistanceToFinish = closestPointDistanceToFinish;
-#ifdef __IN_TEST__
-    std::cout << "Next=(" << nextPosition.getX() << ", " << nextPosition.getY() << ", " << nextPosition.getRadius() << ", " << nextPosition.getAzimuth() << "), Distance=" << nextDistanceToFinish << "\n";
-#endif
+    originExitAzimuth = nextPosition.getAzimuth();
+
+    if (nextPosition.getRadius() < (radiusStepSize * 0.1)) {
+        float nextA = nextPosition.getAzimuth();
+        nextPosition.repoint(0, nextA);
+        originExitAzimuth = nextA + PI * (nextA > finish.getAzimuth() ? -1 : 1);
+    }
 }
 
 void BaseStepper::setupNextStepFromNextPosition() {
@@ -167,14 +172,12 @@ void BaseStepper::findPointsCloserToFinish() {
     pointsCloserToFinishCount = 0;
 
     for (int i = 0; i < NEXT_POINT_COUNT; i++) {
-        if (nextPoints[i].getRadius() >= 0) {
-            float distanceToFinish = this->findDistanceFromPointOnLineToFinish(nextClosestPointsOnLine[i]);
-            if (distanceToFinish < currentDistanceToFinish) {
-                pointsCloserToFinish[pointsCloserToFinishCount] = nextPoints[i];
-                pointsCloserToFinishOnLine[pointsCloserToFinishCount] = nextClosestPointsOnLine[i];
-                pointsCloserToFinishDistance[pointsCloserToFinishCount] = distanceToFinish;
-                pointsCloserToFinishCount++;
-            }
+        float distanceToFinish = this->findDistanceFromPointOnLineToFinish(nextClosestPointsOnLine[i]);
+        if (distanceToFinish < currentDistanceToFinish) {
+            pointsCloserToFinish[pointsCloserToFinishCount] = nextPoints[i];
+            pointsCloserToFinishOnLine[pointsCloserToFinishCount] = nextClosestPointsOnLine[i];
+            pointsCloserToFinishDistance[pointsCloserToFinishCount] = distanceToFinish;
+            pointsCloserToFinishCount++;
         }
     }
 }

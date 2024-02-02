@@ -21,78 +21,34 @@
     SOFTWARE.
 */
 
-#define RADIUS_STEP_POSITIVE 0x8
-#define RADIUS_STEP_NEGATIVE 0x4
-#define AZIMUTH_STEP_POSITIVE 0x2
-#define AZIMUTH_STEP_NEGATIVE 0x1
-#include "step.h"
+#ifndef _POLARPLOTTERCORE_SPIRALSTEPPER_H_
+#define _POLARPLOTTERCORE_SPIRALSTEPPER_H_
 
-Step::Step()
+#include "baseStepper.h"
+
+class SpiralStepper : public BaseStepper
 {
-  state = 0;
-}
+private:
+    float radiusStepFrequency;
+    float azimuthStepFrequency;
+    int radiusStepsTaken;
+    int azimuthStepsTaken;
+    int radiusStep;
+    int azimuthStep;
+    int radiusSteps;
+    int azimuthSteps;
+    int maxSteps;
+    int currentStep;
 
-void Step::setSteps(Step &other)
-{
-  state = other.state;
-}
+protected:
+    bool parseArgumentsAndSetFinish(Point &currentPosition, String &arguments);
+    float findDistanceFromPointOnLineToFinish(Point &point);
+    void setClosestPointOnLine(Point &point, Point &closestPoint);
+    float determineStartingAzimuthFromCenter();
+    void computeNextStep();
 
-void Step::setSteps(int radiusStep, int azimuthStep)
-{
-  unsigned char state = 0;
+public:
+  SpiralStepper(float radiusStepSize, float azimuthStepSize);
+};
 
-  if (radiusStep > 0)
-  {
-    state |= RADIUS_STEP_POSITIVE;
-  }
-  else if (radiusStep < 0)
-  {
-    state |= RADIUS_STEP_NEGATIVE;
-  }
-
-  if (azimuthStep > 0)
-  {
-    state |= AZIMUTH_STEP_POSITIVE;
-  }
-  else if (azimuthStep < 0)
-  {
-    state |= AZIMUTH_STEP_NEGATIVE;
-  }
-
-  this->state = state;
-}
-
-int Step::getRadiusStep() const
-{
-  if (state & RADIUS_STEP_POSITIVE)
-  {
-    return 1;
-  }
-
-  if (state & RADIUS_STEP_NEGATIVE)
-  {
-    return -1;
-  }
-
-  return 0;
-}
-
-int Step::getAzimuthStep() const
-{
-  if (state & AZIMUTH_STEP_POSITIVE)
-  {
-    return 1;
-  }
-
-  if (state & AZIMUTH_STEP_NEGATIVE)
-  {
-    return -1;
-  }
-
-  return 0;
-}
-
-bool Step::hasStep() const
-{
-  return state != 0;
-}
+#endif

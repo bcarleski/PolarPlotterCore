@@ -26,6 +26,7 @@
 
 #include "lineStepper.h"
 #include "circleStepper.h"
+#include "spiralStepper.h"
 #include "extendedPrinter.h"
 #include "statusUpdate.h"
 
@@ -36,6 +37,7 @@ private:
   StatusUpdate &statusUpdater;
   LineStepper lineStepper;
   CircleStepper circleStepper;
+  SpiralStepper spiralStepper;
   BaseStepper *currentStepper;
   Step emptyStep;
 

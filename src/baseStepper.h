@@ -41,7 +41,8 @@ protected:
     const float azimuthStepSize;
 
     Point start;
-    float startingAzimuth;
+    float originExitAzimuth;
+    Point finish;
 
     Point currentPosition;
     Step currentStep;
@@ -68,7 +69,7 @@ protected:
     virtual void snapPointToClosestPossiblePosition(Point &point);
     virtual float findDistanceBetweenPoints(Point &first, Point &second);
 
-    virtual bool parseArguments(Point &currentPosition, String &arguments) = 0;
+    virtual bool parseArgumentsAndSetFinish(Point &currentPosition, String &arguments) = 0;
     virtual float findDistanceFromPointOnLineToFinish(Point &point) = 0;
     virtual void setClosestPointOnLine(Point &point, Point &closestPoint) = 0;
     virtual float determineStartingAzimuthFromCenter() = 0;

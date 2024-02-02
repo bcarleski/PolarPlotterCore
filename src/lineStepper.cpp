@@ -28,7 +28,7 @@ LineStepper::LineStepper(float radiusStepSize, float azimuthStepSize)
 {
 }
 
-bool LineStepper::parseArguments(Point &currentPosition, String &arguments) {
+bool LineStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arguments) {
     int comma = arguments.indexOf(',');
     if (comma <= 0) return false;
 

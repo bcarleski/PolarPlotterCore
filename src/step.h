@@ -27,7 +27,7 @@
 class Step
 {
 private:
-  unsigned char state;
+  int state;
 
 public:
   Step();

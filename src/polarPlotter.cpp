@@ -32,6 +32,7 @@ PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float ma
       marbleSizeInRadiusSteps(marbleSizeInRadiusSteps),
       lineStepper(LineStepper(radiusStepSize, azimuthStepSize)),
       circleStepper(CircleStepper(radiusStepSize, azimuthStepSize)),
+      spiralStepper(SpiralStepper(radiusStepSize, azimuthStepSize)),
       currentStepper(NULL)
 {
 }
@@ -66,6 +67,10 @@ void PolarPlotter::startCommand(String &command)
   case 'c':
   case 'C':
     currentStepper = &circleStepper;
+    break;
+  case 's':
+  case 'S':
+    currentStepper = &spiralStepper;
     break;
   }
 
@@ -167,7 +172,7 @@ void PolarPlotter::step()
     return;
   }
 
-  Step step = currentStepper->step();
+  Step &step = currentStepper->step();
 
   return this->executeStep(step.getRadiusStep(), step.getAzimuthStep(), false);
 }
@@ -242,11 +247,10 @@ void PolarPlotter::setDebug(unsigned int level)
 
 String PolarPlotter::getHelpMessage()
 {
-  return "help       This help message\n"
-         "W          Wipe any existing drawing\n"
-         "L{X},{Y}   Draw a line from the origin to the cartesian point (X,Y)\n"
-         "D{#}       Set the debug level between 0-9 (0-Off, 9-Most Verbose)\n"
-         "RA{JSON}   Simulate having received the given JSON message on the get/accepted topic\n"
-         "RR{JSON}   Simulate having received the given JSON message on the get/rejected topic\n"
-         "RT{JSON}   Simulate having received the given JSON message on the toDevice topic";
+  return "help          This help message\n"
+         "W             Wipe any existing drawing\n"
+         "L{X},{Y}      Draw a line to the cartesian point (X,Y)\n"
+         "C{X},{Y},{D}  Draw a circular arc with center at the cartesian point (X,Y) having an angle of the given degress (-180 to 180)\n"
+         "S{R},{D}      Draw a spiral using R units of radius change and D degrees around\n"
+         "D{#}          Set the debug level between 0-9 (0-Off, 9-Most Verbose)";
 }

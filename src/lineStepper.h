@@ -31,10 +31,9 @@ class LineStepper : public BaseStepper
 private:
     float deltaX;
     float deltaY;
-    Point finish;
 
 protected:
-    bool parseArguments(Point &currentPosition, String &arguments);
+    bool parseArgumentsAndSetFinish(Point &currentPosition, String &arguments);
     float findDistanceFromPointOnLineToFinish(Point &point);
     void setClosestPointOnLine(Point &point, Point &closestPoint);
     float determineStartingAzimuthFromCenter();

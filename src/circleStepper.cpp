@@ -22,21 +22,15 @@
 */
 
 #include "circleStepper.h"
-#ifdef __IN_TEST__
-#include <iostream>
-#endif
 
 CircleStepper::CircleStepper(float radiusStepSize, float azimuthStepSize)
     : BaseStepper(radiusStepSize, azimuthStepSize)
 {
 }
 
-bool CircleStepper::parseArguments(Point &currentPosition, String &arguments) {
+bool CircleStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arguments) {
     int firstComma = arguments.indexOf(',');
     int secondComma = arguments.indexOf(',', firstComma + 1);
-#ifdef __IN_TEST__
-    std::cout << "FirstComma=" << firstComma << ", SecondComma=" << secondComma << "\n";
-#endif
     if (secondComma <= 2) return false;
 
     float centerX = arguments.substring(0, firstComma).toFloat();
@@ -48,9 +42,6 @@ bool CircleStepper::parseArguments(Point &currentPosition, String &arguments) {
 
     radius = this->findDistanceBetweenPoints(currentPosition, center);
 
-#ifdef __IN_TEST__
-    std::cout << "Radius=" << radius << ", Theta=" << theta << "\n";
-#endif
     if (radius < (radiusStepSize * 2) || radius < (azimuthStepSize * 2) || abs(theta) < (azimuthStepSize * 0.1)) return false;
 
     if (abs(theta) > PI) {
@@ -67,36 +58,36 @@ bool CircleStepper::parseArguments(Point &currentPosition, String &arguments) {
     float cenY = center.getY();
     float centeredX = curX - cenX;
     float centeredY = curY - cenY;
-    float middleCenteredX = centeredX * cosHalfTheta + centeredY * sinHalfTheta;
-    float middleCenteredY = centeredX * sinHalfTheta * -1 + centeredY * cosHalfTheta;
-    float finishCenteredX = centeredX * cosTheta + centeredY * sinTheta;
-    float finishCenteredY = centeredX * sinTheta * -1 + centeredY * cosTheta;
+    float middleX = centeredX * cosHalfTheta + centeredY * sinHalfTheta + cenX;
+    float middleY = centeredX * sinHalfTheta + centeredY * cosHalfTheta + cenY;
+    float finishX = centeredX * cosTheta + centeredY * sinTheta + cenX;
+    float finishY = centeredX * sinTheta + centeredY * cosTheta + cenY;
+    slope = (finishY - curY) / (finishX - curX);
+    intercept = finishY - slope * finishX;
+    float midY = slope * middleX + intercept;
+    middleAboveLine = middleY > midY;
 
-    middle.cartesianRepoint(middleCenteredX + cenX, middleCenteredY + cenY);
-    this->orientPoint(currentPosition, middle);
-    finish.cartesianRepoint(finishCenteredX + cenX, finishCenteredY + cenY);
+    finish.cartesianRepoint(finishX, finishY);
     this->orientPoint(currentPosition, finish);
-    middleToFinish = this->findDistanceBetweenPoints(middle, finish);
     this->snapPointToClosestPossiblePosition(finish);
-#ifdef __IN_TEST__
-    std::cout << "Finish=(" << finish.getX() << ", " << finish.getY() << ", " << finish.getRadius() << ", " << finish.getAzimuth() << ")\n";
-#endif
+    slope = (finish.getY() - curY) / (finish.getX() - curX);
+    intercept = finish.getY() - slope * finish.getX();
 
     return true;
 }
 
 float CircleStepper::findDistanceFromPointOnLineToFinish(Point &point)
 {
+    bool aboveLine = point.getY() > (slope * point.getX() + intercept);
     float distanceToFinish = this->findDistanceBetweenPoints(point, finish);
-    float distanceToMiddle = this->findDistanceBetweenPoints(point, middle);
-    float totalDistance = distanceToFinish + (distanceToMiddle > middleToFinish ? distanceToMiddle - middleToFinish : 0);
+    float distanceOnLine = distanceToFinish;
+    
+    if (aboveLine != middleAboveLine) {
+        float distanceToStart = this->findDistanceBetweenPoints(point, start);
+        distanceOnLine += distanceToStart < distanceToFinish ? distanceToStart : distanceToFinish;
+    }
 
-#ifdef __IN_TEST__
-    std::cout << "Point=(" << point.getX() << ", " << point.getY() << ", " << point.getRadius() << ", " << point.getAzimuth() << "), DistanceToMiddle=" << distanceToMiddle << ", DistanceToFinish=" << distanceToFinish << ", TotalDistance=" << totalDistance << "\n";
-#endif
-
-//     return theta * radius;
-    return totalDistance;
+    return distanceOnLine;
 }
 
 void CircleStepper::setClosestPointOnLine(Point &point, Point &closestPoint)
@@ -108,16 +99,9 @@ void CircleStepper::setClosestPointOnLine(Point &point, Point &closestPoint)
     float closestY = center.getY() + deltaY / magnitude * radius;
 
     closestPoint.cartesianRepoint(closestX, closestY);
-#ifdef __IN_TEST__
-    std::cout << "    Point=(" << point.getX() << ", " << point.getY() << ", " << point.getRadius() << ", " << point.getAzimuth() <<
-        "), Closest=(" << closestPoint.getX() << ", " << closestPoint.getY() << ", " << closestPoint.getRadius() << ", " << closestPoint.getAzimuth() << ")\n";
-#endif
 }
 
 float CircleStepper::determineStartingAzimuthFromCenter()
 {
-#ifdef __IN_TEST__
-    std::cout << "Determining Starting Azimuth From Center\n";
-#endif
     return start.getAzimuth() + (PI / 2);
 }
