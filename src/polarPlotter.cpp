@@ -23,16 +23,14 @@
 
 #include "polarPlotter.h"
 
-PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps)
+PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float maxRadius, int marbleSizeInRadiusSteps)
     : printer(ExtendedPrinter(printer)),
       statusUpdater(statusUpdater),
       maxRadius(maxRadius),
-      radiusStepSize(radiusStepSize),
-      azimuthStepSize(azimuthStepSize),
       marbleSizeInRadiusSteps(marbleSizeInRadiusSteps),
-      lineStepper(LineStepper(radiusStepSize, azimuthStepSize)),
-      circleStepper(CircleStepper(radiusStepSize, azimuthStepSize)),
-      spiralStepper(SpiralStepper(radiusStepSize, azimuthStepSize)),
+      lineStepper(LineStepper()),
+      circleStepper(CircleStepper()),
+      spiralStepper(SpiralStepper()),
       currentStepper(NULL)
 {
 }
@@ -42,9 +40,12 @@ void PolarPlotter::onStep(void stepper(const int radiusSteps, const int azimuthS
   this->stepper = stepper;
 }
 
-void PolarPlotter::init(float startingRadius, float startingAzimuth)
+void PolarPlotter::init(float startingRadius, float startingAzimuth, float radiusStepSize, float azimuthStepSize)
 {
   this->position.repoint(startingRadius, startingAzimuth);
+  this->lineStepper.init(radiusStepSize, azimuthStepSize);
+  this->circleStepper.init(radiusStepSize, azimuthStepSize);
+  this->spiralStepper.init(radiusStepSize, azimuthStepSize);
 }
 
 void PolarPlotter::startCommand(String &command)

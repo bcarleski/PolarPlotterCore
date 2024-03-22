@@ -23,10 +23,10 @@
 
 #include "baseStepper.h"
 
-BaseStepper::BaseStepper(float radiusStepSize, float azimuthStepSize)
-  : radiusStepSize(radiusStepSize),
-    azimuthStepSize(azimuthStepSize)
+void BaseStepper::init(float radiusStepSize, float azimuthStepSize)
 {
+    this->radiusStepSize = radiusStepSize;
+    this->azimuthStepSize = azimuthStepSize;
 }
 
 bool BaseStepper::hasStep() {

@@ -23,11 +23,6 @@
 
 #include "spiralStepper.h"
 
-SpiralStepper::SpiralStepper(float radiusStepSize, float azimuthStepSize)
-    : BaseStepper(radiusStepSize, azimuthStepSize)
-{
-}
-
 bool SpiralStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arguments) {
     int comma = arguments.indexOf(',');
     if (comma <= 0) return false;

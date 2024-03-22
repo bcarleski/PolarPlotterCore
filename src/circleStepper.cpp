@@ -23,11 +23,6 @@
 
 #include "circleStepper.h"
 
-CircleStepper::CircleStepper(float radiusStepSize, float azimuthStepSize)
-    : BaseStepper(radiusStepSize, azimuthStepSize)
-{
-}
-
 bool CircleStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arguments) {
     int firstComma = arguments.indexOf(',');
     int secondComma = arguments.indexOf(',', firstComma + 1);

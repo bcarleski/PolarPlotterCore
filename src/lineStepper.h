@@ -37,9 +37,6 @@ protected:
     float findDistanceFromPointOnLineToFinish(Point &point);
     void setClosestPointOnLine(Point &point, Point &closestPoint);
     float determineStartingAzimuthFromCenter();
-
-public:
-  LineStepper(float radiusStepSize, float azimuthStepSize);
 };
 
 #endif

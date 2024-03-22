@@ -37,8 +37,8 @@
 class BaseStepper
 {
 protected:
-    const float radiusStepSize;
-    const float azimuthStepSize;
+    float radiusStepSize;
+    float azimuthStepSize;
 
     Point start;
     float originExitAzimuth;
@@ -75,7 +75,7 @@ protected:
     virtual float determineStartingAzimuthFromCenter() = 0;
 
 public:
-    BaseStepper(float radiusStepSize, float azimuthStepSize);
+    virtual void init(float radiusStepSize, float azimuthStepSize);
     virtual void startNewLine(Point &currentPosition, String &arguments);
     virtual bool hasStep();
     virtual Step& step();

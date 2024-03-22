@@ -23,11 +23,6 @@
 
 #include "lineStepper.h"
 
-LineStepper::LineStepper(float radiusStepSize, float azimuthStepSize)
-    : BaseStepper(radiusStepSize, azimuthStepSize)
-{
-}
-
 bool LineStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arguments) {
     int comma = arguments.indexOf(',');
     if (comma <= 0) return false;

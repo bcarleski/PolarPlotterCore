@@ -46,9 +46,6 @@ protected:
     void setClosestPointOnLine(Point &point, Point &closestPoint);
     float determineStartingAzimuthFromCenter();
     void computeNextStep();
-
-public:
-  SpiralStepper(float radiusStepSize, float azimuthStepSize);
 };
 
 #endif
