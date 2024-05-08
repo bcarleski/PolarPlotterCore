@@ -29,24 +29,40 @@
 
 #define TOPIC_SUBSCRIPTION_COUNT 3
 
+enum CalibrationMode {
+  OFF,
+  ORIGIN,
+  RADIUS,
+  AZIMUTH
+};
+
 class PlotterController
 {
 private:
   Print &printer;
   StatusUpdate &statusUpdater;
   PolarPlotter plotter;
+  void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
+  void (*recalibrater)(const int maxRadiusSteps, const int fullCircleAzimuthSteps);
   String drawing;
   String commands[MAX_COMMAND_COUNT];
   int commandCount;
   int commandIndex;
+  int calibrationRadiusSteps;
+  int calibrationAzimuthSteps;
+  CalibrationMode calibrationMode;
 
   bool needsCommands();
   void executeCommand(String& command);
+  void handleInternalCommand(String& command);
+  void handleCalibrationCommand(String& command);
   void setDebug(String& command);
 
 public:
-  PlotterController(Print &printer, StatusUpdate &statusUpdater, float maxRadius, float radiusStepSize, float azimuthStepSize, int marbleSizeInRadiusSteps);
+  PlotterController(Print &printer, StatusUpdate &statusUpdater, float maxRadius, int marbleSizeInRadiusSteps);
+  void calibrate(float radiusStepSize, float azimuthStepSize);
   void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
+  void onRecalibrate(void recalibrater(const int maxRadiusSteps, const int fullCircleAzimuthSteps));
   void performCycle();
   bool canCycle();
   void newDrawing(String &drawing);

@@ -57,7 +57,7 @@ private:
 public:
   PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float maxRadius, int marbleSizeInRadiusSteps);
   void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
-  void init(float initialRadius, float initialAzimuth, float radiusStepSize, float azimuthStepSize);
+  void calibrate(float initialRadius, float initialAzimuth, float radiusStepSize, float azimuthStepSize);
   void startCommand(String &command);
   void executeWipe();
   bool hasNextStep();

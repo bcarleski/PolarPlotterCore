@@ -23,7 +23,7 @@
 
 #include "baseStepper.h"
 
-void BaseStepper::init(float radiusStepSize, float azimuthStepSize)
+void BaseStepper::calibrate(float radiusStepSize, float azimuthStepSize)
 {
     this->radiusStepSize = radiusStepSize;
     this->azimuthStepSize = azimuthStepSize;

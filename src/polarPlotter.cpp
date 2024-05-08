@@ -40,12 +40,14 @@ void PolarPlotter::onStep(void stepper(const int radiusSteps, const int azimuthS
   this->stepper = stepper;
 }
 
-void PolarPlotter::init(float startingRadius, float startingAzimuth, float radiusStepSize, float azimuthStepSize)
+void PolarPlotter::calibrate(float startingRadius, float startingAzimuth, float radiusStepSize, float azimuthStepSize)
 {
+  this->radiusStepSize = radiusStepSize;
+  this->azimuthStepSize = azimuthStepSize;
   this->position.repoint(startingRadius, startingAzimuth);
-  this->lineStepper.init(radiusStepSize, azimuthStepSize);
-  this->circleStepper.init(radiusStepSize, azimuthStepSize);
-  this->spiralStepper.init(radiusStepSize, azimuthStepSize);
+  this->lineStepper.calibrate(radiusStepSize, azimuthStepSize);
+  this->circleStepper.calibrate(radiusStepSize, azimuthStepSize);
+  this->spiralStepper.calibrate(radiusStepSize, azimuthStepSize);
 }
 
 void PolarPlotter::startCommand(String &command)

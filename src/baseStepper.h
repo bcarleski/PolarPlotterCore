@@ -75,7 +75,7 @@ protected:
     virtual float determineStartingAzimuthFromCenter() = 0;
 
 public:
-    virtual void init(float radiusStepSize, float azimuthStepSize);
+    virtual void calibrate(float radiusStepSize, float azimuthStepSize);
     virtual void startNewLine(Point &currentPosition, String &arguments);
     virtual bool hasStep();
     virtual Step& step();
