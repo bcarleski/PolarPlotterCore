@@ -29,8 +29,8 @@
 class SpiralStepper : public BaseStepper
 {
 private:
-    float radiusStepFrequency;
-    float azimuthStepFrequency;
+    double radiusStepFrequency;
+    double azimuthStepFrequency;
     int radiusStepsTaken;
     int azimuthStepsTaken;
     int radiusStep;
@@ -42,9 +42,9 @@ private:
 
 protected:
     bool parseArgumentsAndSetFinish(Point &currentPosition, String &arguments);
-    float findDistanceFromPointOnLineToFinish(Point &point);
+    double findDistanceFromPointOnLineToFinish(Point &point);
     void setClosestPointOnLine(Point &point, Point &closestPoint);
-    float determineStartingAzimuthFromCenter();
+    double determineStartingAzimuthFromCenter();
     void computeNextStep();
 };
 

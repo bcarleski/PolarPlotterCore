@@ -23,7 +23,7 @@
 
 #include "polarPlotter.h"
 
-PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, float maxRadius, int marbleSizeInRadiusSteps)
+PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps)
     : printer(ExtendedPrinter(printer)),
       statusUpdater(statusUpdater),
       maxRadius(maxRadius),
@@ -41,7 +41,7 @@ void PolarPlotter::onStep(void stepper(const int radiusSteps, const int azimuthS
   this->stepper = stepper;
 }
 
-void PolarPlotter::calibrate(float startingRadius, float startingAzimuth, float radiusStepSize, float azimuthStepSize)
+void PolarPlotter::calibrate(double startingRadius, double startingAzimuth, double radiusStepSize, double azimuthStepSize)
 {
   this->radiusStepSize = radiusStepSize;
   this->azimuthStepSize = azimuthStepSize;
@@ -92,8 +92,8 @@ void PolarPlotter::startCommand(String &command)
     currentStepper->startNewLine(position, arguments);
 
     String positionString = "";
-    float radius = this->position.getRadius();
-    float azimuth = this->position.getAzimuth();
+    double radius = this->position.getRadius();
+    double azimuth = this->position.getAzimuth();
     positionString = positionString + radius + "x" + azimuth;
     const String positionArg = positionString;
     statusUpdater.setPosition(positionArg);
@@ -128,12 +128,12 @@ void PolarPlotter::step()
 void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep)
 {
   Point pos = this->position;
-  float oldRadius = pos.getRadius();
-  float oldAzimuth = pos.getAzimuth();
-  float newRadiusDelta = radiusSteps * this->radiusStepSize;
-  float newAzimuthDelta = azimuthSteps * this->azimuthStepSize;
-  float newRadius = oldRadius + newRadiusDelta;
-  float newAzimuth = oldAzimuth + newAzimuthDelta;
+  double oldRadius = pos.getRadius();
+  double oldAzimuth = pos.getAzimuth();
+  double newRadiusDelta = radiusSteps * this->radiusStepSize;
+  double newAzimuthDelta = azimuthSteps * this->azimuthStepSize;
+  double newRadius = oldRadius + newRadiusDelta;
+  double newAzimuth = oldAzimuth + newAzimuthDelta;
   int radiusStep = radiusSteps;
   int azimuthStep = azimuthSteps;
 

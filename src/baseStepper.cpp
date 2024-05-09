@@ -23,7 +23,7 @@
 
 #include "baseStepper.h"
 
-void BaseStepper::calibrate(float radiusStepSize, float azimuthStepSize)
+void BaseStepper::calibrate(double radiusStepSize, double azimuthStepSize)
 {
     this->radiusStepSize = radiusStepSize;
     this->azimuthStepSize = azimuthStepSize;
@@ -103,11 +103,11 @@ void BaseStepper::determineNextPositionAndDistance() {
     }
 
     Point closestPointToLine = pointsCloserToFinish[0];
-    float closestPointDistanceToFinish = pointsCloserToFinishDistance[0];
-    float closestDistanceToLine = this->findDistanceBetweenPoints(closestPointToLine, pointsCloserToFinishOnLine[0]);
+    double closestPointDistanceToFinish = pointsCloserToFinishDistance[0];
+    double closestDistanceToLine = this->findDistanceBetweenPoints(closestPointToLine, pointsCloserToFinishOnLine[0]);
 
     for (int i = 1; i < pointsCloserToFinishCount; i++) {
-        float distanceToLine = this->findDistanceBetweenPoints(pointsCloserToFinish[i], pointsCloserToFinishOnLine[i]);
+        double distanceToLine = this->findDistanceBetweenPoints(pointsCloserToFinish[i], pointsCloserToFinishOnLine[i]);
 
         if (distanceToLine < closestDistanceToLine) {
             closestPointToLine = pointsCloserToFinish[i];
@@ -121,17 +121,17 @@ void BaseStepper::determineNextPositionAndDistance() {
     originExitAzimuth = nextPosition.getAzimuth();
 
     if (nextPosition.getRadius() < (radiusStepSize * 0.1)) {
-        float nextA = nextPosition.getAzimuth();
+        double nextA = nextPosition.getAzimuth();
         nextPosition.repoint(0, nextA);
         originExitAzimuth = nextA + PI * (nextA > finish.getAzimuth() ? -1 : 1);
     }
 }
 
 void BaseStepper::setupNextStepFromNextPosition() {
-    float currentRadiusPlusMargin = currentPosition.getRadius() + radiusStepSize * 0.1;
-    float currentRadiusMinusMargin = currentPosition.getRadius() - radiusStepSize * 0.1;
-    float currentAzimuthPlusMargin = currentPosition.getAzimuth() + azimuthStepSize * 0.1;
-    float currentAzimuthMinusMargin = currentPosition.getAzimuth() - azimuthStepSize * 0.1;
+    double currentRadiusPlusMargin = currentPosition.getRadius() + radiusStepSize * 0.1;
+    double currentRadiusMinusMargin = currentPosition.getRadius() - radiusStepSize * 0.1;
+    double currentAzimuthPlusMargin = currentPosition.getAzimuth() + azimuthStepSize * 0.1;
+    double currentAzimuthMinusMargin = currentPosition.getAzimuth() - azimuthStepSize * 0.1;
     int radiusStep = 0, azimuthStep = 0;
 
     if (nextPosition.getRadius() > currentRadiusPlusMargin) {
@@ -149,8 +149,8 @@ void BaseStepper::setupNextStepFromNextPosition() {
 }
 
 void BaseStepper::setupNextPoints() {
-    float curR = currentPosition.getRadius();
-    float curA = currentPosition.getAzimuth();
+    double curR = currentPosition.getRadius();
+    double curA = currentPosition.getAzimuth();
 
     nextPoints[0].repoint(curR - radiusStepSize, curA - azimuthStepSize);
     nextPoints[1].repoint(curR - radiusStepSize, curA);
@@ -172,7 +172,7 @@ void BaseStepper::findPointsCloserToFinish() {
     pointsCloserToFinishCount = 0;
 
     for (int i = 0; i < NEXT_POINT_COUNT; i++) {
-        float distanceToFinish = this->findDistanceFromPointOnLineToFinish(nextClosestPointsOnLine[i]);
+        double distanceToFinish = this->findDistanceFromPointOnLineToFinish(nextClosestPointsOnLine[i]);
         if (distanceToFinish < currentDistanceToFinish) {
             pointsCloserToFinish[pointsCloserToFinishCount] = nextPoints[i];
             pointsCloserToFinishOnLine[pointsCloserToFinishCount] = nextClosestPointsOnLine[i];
@@ -183,9 +183,9 @@ void BaseStepper::findPointsCloserToFinish() {
 }
 
 void BaseStepper::orientPoint(Point &referencePoint, Point &pointToOrient) {
-  float referenceA = referencePoint.getAzimuth();
-  float fullCircle = PI * 2;
-  float pointA = pointToOrient.getAzimuth();
+  double referenceA = referencePoint.getAzimuth();
+  double fullCircle = PI * 2;
+  double pointA = pointToOrient.getAzimuth();
 
   // Ensure we go the way that has the shortest sweep
   while (abs(referenceA - pointA) > abs(referenceA - (pointA + fullCircle)))
@@ -201,14 +201,14 @@ void BaseStepper::orientPoint(Point &referencePoint, Point &pointToOrient) {
 }
 
 void BaseStepper::snapPointToClosestPossiblePosition(Point &point) {
-  float radius = round(point.getRadius() / this->radiusStepSize) * this->radiusStepSize;
-  float azimuth = round(point.getAzimuth() / this->azimuthStepSize) * this->azimuthStepSize;
+  double radius = round(point.getRadius() / this->radiusStepSize) * this->radiusStepSize;
+  double azimuth = round(point.getAzimuth() / this->azimuthStepSize) * this->azimuthStepSize;
   point.repoint(radius, azimuth);
 }
 
-float BaseStepper::findDistanceBetweenPoints(Point &first, Point &second) {
-    float deltaX = first.getX() - second.getX();
-    float deltaY = first.getY() - second.getY();
+double BaseStepper::findDistanceBetweenPoints(Point &first, Point &second) {
+    double deltaX = first.getX() - second.getX();
+    double deltaY = first.getY() - second.getY();
 
     return sqrt(deltaX * deltaX + deltaY * deltaY);
 }

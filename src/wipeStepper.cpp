@@ -24,7 +24,7 @@
 #include "wipeStepper.h"
 #define WIPE_LOOPS 15
 
-WipeStepper::WipeStepper(float maxRadius) : currentStep(Step()), state(WIPE_INITIALIZING), maxRadius(maxRadius)
+WipeStepper::WipeStepper(double maxRadius) : currentStep(Step()), state(WIPE_INITIALIZING), maxRadius(maxRadius)
 {
 }
 
@@ -35,7 +35,7 @@ void WipeStepper::startNewLine(Point &currentPosition, String &arguments)
     fullCircleAzimuthSteps = round((2 * PI) / azimuthStepSize);
     edgeToCenterRadiusSteps = round(maxRadius / radiusStepSize);
     spiralInAzimuthSteps = fullCircleAzimuthSteps * WIPE_LOOPS;
-    float spiralInRadiusSteps = round(maxRadius / radiusStepSize);
+    double spiralInRadiusSteps = round(maxRadius / radiusStepSize);
     spiralInAzimuthStepsPerRadiusStep = spiralInAzimuthSteps / spiralInRadiusSteps;
 
     currentFullCircleStep = 0;
@@ -69,7 +69,7 @@ Step &WipeStepper::step()
     return currentStep;
 }
 
-void WipeStepper::calibrate(float radiusStepSize, float azimuthStepSize)
+void WipeStepper::calibrate(double radiusStepSize, double azimuthStepSize)
 {
     this->radiusStepSize = radiusStepSize;
     this->azimuthStepSize = azimuthStepSize;

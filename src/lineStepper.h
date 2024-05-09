@@ -29,14 +29,14 @@
 class LineStepper : public BaseStepper
 {
 private:
-    float deltaX;
-    float deltaY;
+    double deltaX;
+    double deltaY;
 
 protected:
     bool parseArgumentsAndSetFinish(Point &currentPosition, String &arguments);
-    float findDistanceFromPointOnLineToFinish(Point &point);
+    double findDistanceFromPointOnLineToFinish(Point &point);
     void setClosestPointOnLine(Point &point, Point &closestPoint);
-    float determineStartingAzimuthFromCenter();
+    double determineStartingAzimuthFromCenter();
 };
 
 #endif

@@ -30,16 +30,16 @@ class CircleStepper : public BaseStepper
 {
 private:
     Point center;
-    float radius;
-    float slope;
-    float intercept;
+    double radius;
+    double slope;
+    double intercept;
     bool middleAboveLine;
 
 protected:
     bool parseArgumentsAndSetFinish(Point &currentPosition, String &arguments);
-    float findDistanceFromPointOnLineToFinish(Point &point);
+    double findDistanceFromPointOnLineToFinish(Point &point);
     void setClosestPointOnLine(Point &point, Point &closestPoint);
-    float determineStartingAzimuthFromCenter();
+    double determineStartingAzimuthFromCenter();
 };
 
 #endif

@@ -28,10 +28,10 @@ bool CircleStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &a
     int secondComma = arguments.indexOf(',', firstComma + 1);
     if (secondComma <= 2) return false;
 
-    float centerX = arguments.substring(0, firstComma).toFloat();
-    float centerY = arguments.substring(firstComma + 1, secondComma).toFloat();
-    float thetaDegrees = arguments.substring(secondComma + 1).toFloat();
-    float theta = thetaDegrees / 180 * PI;
+    double centerX = arguments.substring(0, firstComma).toFloat();
+    double centerY = arguments.substring(firstComma + 1, secondComma).toFloat();
+    double thetaDegrees = arguments.substring(secondComma + 1).toFloat();
+    double theta = thetaDegrees / 180 * PI;
     center.cartesianRepoint(centerX, centerY);
     this->orientPoint(currentPosition, center);
 
@@ -43,23 +43,23 @@ bool CircleStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &a
         theta = PI * (theta > 0 ? 1 : -1);
     }
 
-    float cosTheta = cos(theta);
-    float sinTheta = sin(theta);
-    float cosHalfTheta = cos(theta * 0.5);
-    float sinHalfTheta = sin(theta * 0.5);
-    float curX = currentPosition.getX();
-    float curY = currentPosition.getY();
-    float cenX = center.getX();
-    float cenY = center.getY();
-    float centeredX = curX - cenX;
-    float centeredY = curY - cenY;
-    float middleX = centeredX * cosHalfTheta + centeredY * sinHalfTheta + cenX;
-    float middleY = centeredX * sinHalfTheta + centeredY * cosHalfTheta + cenY;
-    float finishX = centeredX * cosTheta + centeredY * sinTheta + cenX;
-    float finishY = centeredX * sinTheta + centeredY * cosTheta + cenY;
+    double cosTheta = cos(theta);
+    double sinTheta = sin(theta);
+    double cosHalfTheta = cos(theta * 0.5);
+    double sinHalfTheta = sin(theta * 0.5);
+    double curX = currentPosition.getX();
+    double curY = currentPosition.getY();
+    double cenX = center.getX();
+    double cenY = center.getY();
+    double centeredX = curX - cenX;
+    double centeredY = curY - cenY;
+    double middleX = centeredX * cosHalfTheta + centeredY * sinHalfTheta + cenX;
+    double middleY = centeredX * sinHalfTheta + centeredY * cosHalfTheta + cenY;
+    double finishX = centeredX * cosTheta + centeredY * sinTheta + cenX;
+    double finishY = centeredX * sinTheta + centeredY * cosTheta + cenY;
     slope = (finishY - curY) / (finishX - curX);
     intercept = finishY - slope * finishX;
-    float midY = slope * middleX + intercept;
+    double midY = slope * middleX + intercept;
     middleAboveLine = middleY > midY;
 
     finish.cartesianRepoint(finishX, finishY);
@@ -71,14 +71,14 @@ bool CircleStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &a
     return true;
 }
 
-float CircleStepper::findDistanceFromPointOnLineToFinish(Point &point)
+double CircleStepper::findDistanceFromPointOnLineToFinish(Point &point)
 {
     bool aboveLine = point.getY() > (slope * point.getX() + intercept);
-    float distanceToFinish = this->findDistanceBetweenPoints(point, finish);
-    float distanceOnLine = distanceToFinish;
+    double distanceToFinish = this->findDistanceBetweenPoints(point, finish);
+    double distanceOnLine = distanceToFinish;
     
     if (aboveLine != middleAboveLine) {
-        float distanceToStart = this->findDistanceBetweenPoints(point, start);
+        double distanceToStart = this->findDistanceBetweenPoints(point, start);
         distanceOnLine += distanceToStart < distanceToFinish ? distanceToStart : distanceToFinish;
     }
 
@@ -87,16 +87,16 @@ float CircleStepper::findDistanceFromPointOnLineToFinish(Point &point)
 
 void CircleStepper::setClosestPointOnLine(Point &point, Point &closestPoint)
 {
-    float deltaX = point.getX() - center.getX();
-    float deltaY = point.getY() - center.getY();
-    float magnitude = sqrt(deltaX * deltaX + deltaY * deltaY);
-    float closestX = center.getX() + deltaX / magnitude * radius;
-    float closestY = center.getY() + deltaY / magnitude * radius;
+    double deltaX = point.getX() - center.getX();
+    double deltaY = point.getY() - center.getY();
+    double magnitude = sqrt(deltaX * deltaX + deltaY * deltaY);
+    double closestX = center.getX() + deltaX / magnitude * radius;
+    double closestY = center.getY() + deltaY / magnitude * radius;
 
     closestPoint.cartesianRepoint(closestX, closestY);
 }
 
-float CircleStepper::determineStartingAzimuthFromCenter()
+double CircleStepper::determineStartingAzimuthFromCenter()
 {
     return start.getAzimuth() + (PI / 2);
 }

@@ -27,9 +27,9 @@ bool SpiralStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &a
     int comma = arguments.indexOf(',');
     if (comma <= 0) return false;
 
-    float radiusOffset = arguments.substring(0, comma).toFloat();
-    float degreeOffset = arguments.substring(comma + 1).toFloat();
-    float azimuthOffset = (degreeOffset / 180) * PI;
+    double radiusOffset = arguments.substring(0, comma).toFloat();
+    double degreeOffset = arguments.substring(comma + 1).toFloat();
+    double azimuthOffset = (degreeOffset / 180) * PI;
 
     if ((currentPosition.getRadius() + radiusOffset) < 0) {
         radiusOffset = currentPosition.getRadius() * -1;
@@ -42,7 +42,7 @@ bool SpiralStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &a
     azimuthSteps = abs(round(azimuthOffset / azimuthStepSize));
     maxSteps = radiusSteps > azimuthSteps ? radiusSteps : azimuthSteps;
 
-    float totalSteps = maxSteps;
+    double totalSteps = maxSteps;
     radiusStepFrequency = radiusSteps / totalSteps;
     azimuthStepFrequency = azimuthSteps / totalSteps;
     radiusStepsTaken = 0;
@@ -78,7 +78,7 @@ void SpiralStepper::computeNextStep()
     nextStep.setSteps(rStep, aStep);
 }
 
-float SpiralStepper::findDistanceFromPointOnLineToFinish(Point &point)
+double SpiralStepper::findDistanceFromPointOnLineToFinish(Point &point)
 {
     // Not needed for this class
     return 0;
@@ -89,7 +89,7 @@ void SpiralStepper::setClosestPointOnLine(Point &point, Point &closestPoint)
     // Not needed for this class
 }
 
-float SpiralStepper::determineStartingAzimuthFromCenter()
+double SpiralStepper::determineStartingAzimuthFromCenter()
 {
     return start.getAzimuth();
 }

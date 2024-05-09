@@ -27,8 +27,8 @@ bool LineStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arg
     int comma = arguments.indexOf(',');
     if (comma <= 0) return false;
 
-    float finishX = arguments.substring(0, comma).toFloat();
-    float finishY = arguments.substring(comma + 1).toFloat();
+    double finishX = arguments.substring(0, comma).toFloat();
+    double finishY = arguments.substring(comma + 1).toFloat();
     deltaX = finishX - currentPosition.getX();
     deltaY = finishY - currentPosition.getY();
 
@@ -39,21 +39,21 @@ bool LineStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arg
     return true;
 }
 
-float LineStepper::findDistanceFromPointOnLineToFinish(Point &point)
+double LineStepper::findDistanceFromPointOnLineToFinish(Point &point)
 {
     return this->findDistanceBetweenPoints(point, this->finish);
 }
 
 void LineStepper::setClosestPointOnLine(Point &point, Point &closestPoint)
 {
-    float startToFinishSquared = deltaX * deltaX + deltaY * deltaY;
-    float startToPointDotStartToFinish = (point.getX() - start.getX()) * deltaX + (point.getY() - start.getY()) * deltaY;
-    float normalizedDistanceFromStart = startToPointDotStartToFinish / startToFinishSquared;
+    double startToFinishSquared = deltaX * deltaX + deltaY * deltaY;
+    double startToPointDotStartToFinish = (point.getX() - start.getX()) * deltaX + (point.getY() - start.getY()) * deltaY;
+    double normalizedDistanceFromStart = startToPointDotStartToFinish / startToFinishSquared;
 
     closestPoint.cartesianRepoint(start.getX() + deltaX * normalizedDistanceFromStart, start.getY() + deltaY * normalizedDistanceFromStart);
 }
 
-float LineStepper::determineStartingAzimuthFromCenter()
+double LineStepper::determineStartingAzimuthFromCenter()
 {
     return finish.getAzimuth();
 }

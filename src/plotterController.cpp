@@ -23,7 +23,7 @@
 
 #include "plotterController.h"
 
-PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater, float maxRadius, int marbleSizeInRadiusSteps)
+PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps)
     : printer(printer),
       statusUpdater(statusUpdater),
       plotter(PolarPlotter(printer, statusUpdater, maxRadius, marbleSizeInRadiusSteps)),
@@ -31,7 +31,7 @@ PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater
 {
 }
 
-void PlotterController::calibrate(float radiusStepSize, float azimuthStepSize)
+void PlotterController::calibrate(double radiusStepSize, double azimuthStepSize)
 {
   state = RESUMING;
   printer.println("Resuming after calibration");

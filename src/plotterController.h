@@ -69,8 +69,8 @@ private:
   void setDebug(String& command);
 
 public:
-  PlotterController(Print &printer, StatusUpdate &statusUpdater, float maxRadius, int marbleSizeInRadiusSteps);
-  void calibrate(float radiusStepSize, float azimuthStepSize);
+  PlotterController(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps);
+  void calibrate(double radiusStepSize, double azimuthStepSize);
   void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
   void onRecalibrate(void recalibrater(const int maxRadiusSteps, const int fullCircleAzimuthSteps));
   void performCycle();

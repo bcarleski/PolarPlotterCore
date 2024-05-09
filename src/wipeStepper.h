@@ -38,16 +38,16 @@ enum WipeState
 class WipeStepper : public AbstractStepper
 {
 private:
-    float radiusStepSize;
-    float azimuthStepSize;
-    float maxRadius;
+    double radiusStepSize;
+    double azimuthStepSize;
+    double maxRadius;
     WipeState state;
 
     int fullCircleAzimuthSteps;
     int stepsToEdge;
     int edgeToCenterRadiusSteps;
     int spiralInAzimuthSteps;
-    float spiralInAzimuthStepsPerRadiusStep;
+    double spiralInAzimuthStepsPerRadiusStep;
 
     int currentStepToEdge;
     int currentFullCircleStep;
@@ -61,8 +61,8 @@ private:
     void spiralIn();
 
 public:
-    WipeStepper(float maxRadius);
-    void calibrate(float radiusStepSize, float azimuthStepSize);
+    WipeStepper(double maxRadius);
+    void calibrate(double radiusStepSize, double azimuthStepSize);
     void startNewLine(Point &currentPosition, String &arguments);
     bool hasStep();
     Step& step();

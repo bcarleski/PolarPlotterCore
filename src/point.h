@@ -29,21 +29,21 @@
 class Point
 {
 private:
-  float x;
-  float y;
-  float radius;
-  float azimuth;
+  double x;
+  double y;
+  double radius;
+  double azimuth;
 
 public:
   Point();
-  Point(float radius, float azimuth);
-  Point(float x, float y, float radius, float azimuth);
-  float getX() const;
-  float getY() const;
-  float getRadius() const;
-  float getAzimuth() const;
-  void repoint(float radius, float azimuth);
-  void cartesianRepoint(float x, float y);
+  Point(double radius, double azimuth);
+  Point(double x, double y, double radius, double azimuth);
+  double getX() const;
+  double getY() const;
+  double getRadius() const;
+  double getAzimuth() const;
+  void repoint(double radius, double azimuth);
+  void cartesianRepoint(double x, double y);
   void cloneFrom(Point &other);
 };
 

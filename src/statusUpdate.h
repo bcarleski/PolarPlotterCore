@@ -72,8 +72,8 @@ public:
     this->writeStatus(k, v);
   }
 
-  virtual void setRadiusStepSize(const float value) = 0;
-  virtual void setAzimuthStepSize(const float value) = 0;
+  virtual void setRadiusStepSize(const double value) = 0;
+  virtual void setAzimuthStepSize(const double value) = 0;
   virtual void setCurrentDrawing(const String &value) = 0;
   virtual void setCurrentStep(const String &value) = 0;
   virtual void setPosition(const String &value) = 0;

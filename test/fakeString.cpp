@@ -66,7 +66,7 @@ String String::substring( unsigned int beginIndex, unsigned int endIndex ) const
 	return newString;
 }
 
-float String::toFloat() const {
+double String::toFloat() const {
     return atof(cstr);
 }
 

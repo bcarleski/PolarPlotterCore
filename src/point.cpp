@@ -31,12 +31,12 @@ Point::Point()
   this->azimuth = 0;
 }
 
-Point::Point(float radius, float azimuth)
+Point::Point(double radius, double azimuth)
 {
   this->repoint(radius, azimuth);
 }
 
-Point::Point(float x, float y, float radius, float azimuth)
+Point::Point(double x, double y, double radius, double azimuth)
 {
   this->x = x;
   this->y = y;
@@ -44,27 +44,27 @@ Point::Point(float x, float y, float radius, float azimuth)
   this->azimuth = azimuth;
 }
 
-float Point::getX() const
+double Point::getX() const
 {
   return this->x;
 }
 
-float Point::getY() const
+double Point::getY() const
 {
   return this->y;
 }
 
-float Point::getRadius() const
+double Point::getRadius() const
 {
   return this->radius;
 }
 
-float Point::getAzimuth() const
+double Point::getAzimuth() const
 {
   return this->azimuth;
 }
 
-void Point::repoint(float radius, float azimuth)
+void Point::repoint(double radius, double azimuth)
 {
   this->x = radius * cos(azimuth);
   this->y = radius * sin(azimuth);
@@ -72,7 +72,7 @@ void Point::repoint(float radius, float azimuth)
   this->azimuth = azimuth;
 }
 
-void Point::cartesianRepoint(float x, float y)
+void Point::cartesianRepoint(double x, double y)
 {
   this->x = x;
   this->y = y;

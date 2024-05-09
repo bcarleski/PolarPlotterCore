@@ -30,26 +30,26 @@
 class BaseStepper : public AbstractStepper
 {
 protected:
-    float radiusStepSize;
-    float azimuthStepSize;
+    double radiusStepSize;
+    double azimuthStepSize;
 
     Point start;
-    float originExitAzimuth;
+    double originExitAzimuth;
     Point finish;
 
     Point currentPosition;
     Step currentStep;
-    float currentDistanceToFinish;
+    double currentDistanceToFinish;
 
     Point nextPosition;
     Step nextStep;
-    float nextDistanceToFinish;
+    double nextDistanceToFinish;
 
     Point nextPoints[NEXT_POINT_COUNT];
     Point nextClosestPointsOnLine[NEXT_POINT_COUNT];
     Point pointsCloserToFinish[NEXT_POINT_COUNT];
     Point pointsCloserToFinishOnLine[NEXT_POINT_COUNT];
-    float pointsCloserToFinishDistance[NEXT_POINT_COUNT];
+    double pointsCloserToFinishDistance[NEXT_POINT_COUNT];
     int pointsCloserToFinishCount;
 
     virtual void computeNextStep();
@@ -60,15 +60,15 @@ protected:
     virtual void findPointsCloserToFinish();
     virtual void orientPoint(Point &referencePoint, Point &pointToOrient);
     virtual void snapPointToClosestPossiblePosition(Point &point);
-    virtual float findDistanceBetweenPoints(Point &first, Point &second);
+    virtual double findDistanceBetweenPoints(Point &first, Point &second);
 
     virtual bool parseArgumentsAndSetFinish(Point &currentPosition, String &arguments) = 0;
-    virtual float findDistanceFromPointOnLineToFinish(Point &point) = 0;
+    virtual double findDistanceFromPointOnLineToFinish(Point &point) = 0;
     virtual void setClosestPointOnLine(Point &point, Point &closestPoint) = 0;
-    virtual float determineStartingAzimuthFromCenter() = 0;
+    virtual double determineStartingAzimuthFromCenter() = 0;
 
 public:
-    virtual void calibrate(float radiusStepSize, float azimuthStepSize);
+    virtual void calibrate(double radiusStepSize, double azimuthStepSize);
     virtual void startNewLine(Point &currentPosition, String &arguments);
     virtual bool hasStep();
     virtual Step& step();
