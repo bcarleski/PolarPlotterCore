@@ -27,14 +27,17 @@ PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater
     : printer(printer),
       statusUpdater(statusUpdater),
       plotter(PolarPlotter(printer, statusUpdater, maxRadius, marbleSizeInRadiusSteps)),
-      calibrationMode(OFF)
+      state(INITIALIZING)
 {
 }
 
 void PlotterController::calibrate(float radiusStepSize, float azimuthStepSize)
 {
-  this->calibrationMode = OFF;
-  this->plotter.calibrate(0.0, 0.0, radiusStepSize, azimuthStepSize);
+  state = RESUMING;
+  printer.println("Resuming after calibration");
+  isCalibrated = true;
+  statusUpdater.setState("Resuming");
+  plotter.calibrate(0.0, 0.0, radiusStepSize, azimuthStepSize);
 }
 
 void PlotterController::onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep))
@@ -50,13 +53,23 @@ void PlotterController::onRecalibrate(void recalibrater(const int maxRadiusSteps
 
 void PlotterController::performCycle()
 {
-  if (calibrationMode != OFF || !plotter.hasNextStep())
+  if (state == PAUSED) {
+    return;
+  }
+
+  const bool calibrating = isCalibrating();
+  const bool manual = isManual();
+  if (calibrating || manual || !plotter.hasNextStep())
   {
     if (this->needsCommands()) {
-      if (calibrationMode != OFF) {
+      if (calibrating) {
         String defaultCommand = "C";
 
         this->handleCalibrationCommand(defaultCommand);
+      } else if (!manual && state != RETRIEVING) {
+        printer.println("Controller needs commands");
+        statusUpdater.setState("Retrieving Commands");
+        state = RETRIEVING;
       }
 
       return;
@@ -69,39 +82,68 @@ void PlotterController::performCycle()
     }
   }
 
-  if (calibrationMode == OFF && plotter.hasNextStep()) plotter.step();
+  if (!calibrating && !manual && plotter.hasNextStep()) {
+    if (state != DRAWING) {
+      printer.println("Starting drawing");
+      state = DRAWING;
+    }
+
+    plotter.step();
+  }
 }
 
 void PlotterController::executeCommand(String& command) {
-  if (calibrationMode != OFF) {
+  if (isManual()) {
+    handleManualCommand(command);
+    return;
+  }
+  if (isCalibrating()) {
     handleCalibrationCommand(command);
     return;
   }
 
-  const char chr = command.charAt(0);
-  switch (chr) {
-    case '.':
-      handleInternalCommand(command);
-      break;
-    default:
-      printer.print("Starting command ");
-      printer.print(commandIndex);
-      printer.print(": ");
-      printer.println(command);
-      plotter.startCommand(command);
-      printer.print("    Has Steps: ");
-      printer.println(plotter.hasNextStep());
-      break;
-  }
+  printer.print("Starting command ");
+  printer.print(commandIndex);
+  printer.print(": ");
+  printer.println(command);
+  plotter.startCommand(command);
+  printer.print("    Has Steps: ");
+  printer.println(plotter.hasNextStep());
 }
 
-void PlotterController::handleInternalCommand(String& command) {
+void PlotterController::handleControlCommand(String& command) {
   const char chr2 = command.charAt(1);
   switch (chr2) {
     case 'C':
     case 'c':
       printer.println("Starting calibration");
-      calibrationMode = ORIGIN;
+      statusUpdater.setState("Calibrating Center");
+
+      commandIndex = 0;
+      commandCount = 0;
+      state = CALIBRATING_ORIGIN;
+      break;
+    case 'M':
+    case 'm':
+      printer.println("Starting manual commands in radius mode");
+      statusUpdater.setState("Manual Radius");
+      state = MANUAL_RADIUS;
+      break;
+    case 'P':
+    case 'p':
+      if (state == DRAWING || state == RETRIEVING) {
+        printer.println("Pausing");
+        statusUpdater.setState("Paused");
+        state = PAUSED;
+      }
+      break;
+    case 'R':
+    case 'r':
+      if (state == PAUSED) {
+        printer.println("Resuming");
+        statusUpdater.setState("Resuming");
+        state = RESUMING;
+      }
       break;
     case 'D':
     case 'd':
@@ -113,8 +155,10 @@ void PlotterController::handleInternalCommand(String& command) {
       break;
     case 'W':
     case 'w':
-      printer.println("Executing wipe");
-      plotter.executeWipe();
+      commandIndex = 0;
+      commandCount = 0;
+      String cmd = "W";
+      addCommand(cmd);
       break;
   }
 }
@@ -129,20 +173,22 @@ void PlotterController::handleCalibrationCommand(String& command) {
     printer.println(command);
   }
 
-  switch (calibrationMode) {
-    case ORIGIN:
-    case RADIUS:
+  switch (state) {
+    case CALIBRATING_ORIGIN:
+    case CALIBRATING_RADIUS:
       switch (chr)
       {
         case 'A': // Accept
         case 'a':
-          if (calibrationMode == ORIGIN) {
+          if (state == CALIBRATING_ORIGIN) {
             printer.println("Finished origin calibration, switching to radius calibration");
-            calibrationMode = RADIUS;
+            statusUpdater.setState("Calibrating Edge");
+            state = CALIBRATING_RADIUS;
             calibrationRadiusSteps = 0;
           } else {
             printer.println("Finished radius calibration, switching to azimuth calibration");
-            calibrationMode = AZIMUTH;
+            statusUpdater.setState("Calibrating Circle");
+            state = CALIBRATING_AZIMUTH;
             calibrationAzimuthSteps = 0;
           }
           break;
@@ -152,18 +198,19 @@ void PlotterController::handleCalibrationCommand(String& command) {
           break;
         case '+': radiusSteps = 1; break;
         case '-': radiusSteps = -1; break;
-        default: azimuthSteps = calibrationMode == ORIGIN ? 1 : 0; break;
+        default: azimuthSteps = state == CALIBRATING_ORIGIN ? 1 : 0; break;
       }
 
-      if (calibrationMode == RADIUS) calibrationRadiusSteps += radiusSteps;
+      if (state == CALIBRATING_RADIUS) calibrationRadiusSteps += radiusSteps;
     break;
-    case AZIMUTH:
+    case CALIBRATING_AZIMUTH:
       switch (chr)
       {
         case 'A': // Accept
         case 'a':
           printer.println("Finished azimuth calibration, ending calibration");
-          calibrationMode = OFF;
+          statusUpdater.setState("Resuming");
+          state = RESUMING;
           radiusSteps = -1 * calibrationRadiusSteps;
           break;
         case 'O': // Offset
@@ -193,7 +240,7 @@ void PlotterController::handleCalibrationCommand(String& command) {
     }
   }
 
-  if (calibrationMode == OFF) {
+  if (state == RESUMING) {
     printer.print("Finished calibration, radiusSteps=");
     printer.print(calibrationRadiusSteps);
     printer.print(", azimuthSteps=");
@@ -205,6 +252,73 @@ void PlotterController::handleCalibrationCommand(String& command) {
   }
 }
 
+bool PlotterController::isCalibrating() {
+  return state == CALIBRATING_ORIGIN || state == CALIBRATING_RADIUS || state == CALIBRATING_AZIMUTH;
+}
+
+void PlotterController::handleManualCommand(String& command) {
+  const char chr = command.charAt(0);
+  int azimuthSteps = 0;
+  int radiusSteps = 0;
+
+  switch (chr)
+  {
+    case 'A': // Manual Azimuth
+    case 'a':
+      if (state != MANUAL_AZIMUTH) {
+        printer.println("Switching to manual azimuth");
+        statusUpdater.setState("Manual Azimuth");
+        state = MANUAL_AZIMUTH;
+      }
+      break;
+    case 'R': // Manual Radius
+    case 'r':
+      if (state != MANUAL_RADIUS) {
+        printer.println("Switching to manual radius");
+        statusUpdater.setState("Manual Radius");
+        state = MANUAL_RADIUS;
+      }
+      break;
+    case 'X': // Exit
+    case 'x':
+      if (state == MANUAL_AZIMUTH || state == MANUAL_RADIUS) {
+        if (isCalibrated) {
+          printer.println("Resuming drawing from manual mode");
+          statusUpdater.setState("Resuming");
+          state = RESUMING;
+        } else {
+          printer.println("Resuming calibration from manual mode");
+          statusUpdater.setState("Calibrating Center");
+          state = CALIBRATING_ORIGIN;
+        }
+      }
+      break;
+    case 'O': // Offset
+    case 'o':
+      if (state == MANUAL_AZIMUTH) {
+        azimuthSteps = command.substring(1).toInt();
+      } else if (state == MANUAL_RADIUS) {
+        radiusSteps = command.substring(1).toInt();
+      }
+      break;
+    default: break;
+  }
+
+  if (stepper) {
+    const int aStep = azimuthSteps > 0 ? 1 : (azimuthSteps < 0 ? -1 : 0);
+    const int rStep = radiusSteps > 0 ? 1 : (radiusSteps < 0 ? -1 : 0);
+    const int maxSteps = abs(azimuthSteps) > abs(radiusSteps) ? abs(azimuthSteps) : abs(radiusSteps);
+
+    for (int i = 0; i < maxSteps; i++) {
+      stepper(rStep, aStep, true);
+    }
+  }
+}
+
+bool PlotterController::isManual() {
+  return state == MANUAL_RADIUS || state == MANUAL_AZIMUTH;
+}
+
 void PlotterController::setDebug(String& command) {
   int debug = command.substring(1).toInt();
   printer.print("Setting debug to ");
@@ -214,7 +328,7 @@ void PlotterController::setDebug(String& command) {
 
 bool PlotterController::canCycle()
 {
-  return calibrationMode != OFF || plotter.hasNextStep() || !this->needsCommands();
+  return state == PAUSED || isCalibrating() || isManual() || plotter.hasNextStep() || !this->needsCommands();
 }
 
 bool PlotterController::needsCommands()
@@ -227,15 +341,17 @@ void PlotterController::newDrawing(String &drawing)
   commandIndex = 0;
   commandCount = 0;
   this->drawing = drawing;
-#ifndef __IN_TEST__
-  statusUpdater.status("WIPING");
-  printer.println("Executing wipe");
-  plotter.executeWipe();
-#endif
+  const String drawingArg = drawing;
+  statusUpdater.setCurrentDrawing(drawingArg);
 }
 
 void PlotterController::addCommand(String &command)
 {
+  if (command.charAt(0) == '.') {
+    handleControlCommand(command);
+    return;
+  }
+
   if (commandCount < MAX_COMMAND_COUNT)
   {
     commands[commandCount++] = command;

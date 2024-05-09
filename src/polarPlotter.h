@@ -27,6 +27,7 @@
 #include "lineStepper.h"
 #include "circleStepper.h"
 #include "spiralStepper.h"
+#include "wipeStepper.h"
 #include "extendedPrinter.h"
 #include "statusUpdate.h"
 
@@ -38,7 +39,8 @@ private:
   LineStepper lineStepper;
   CircleStepper circleStepper;
   SpiralStepper spiralStepper;
-  BaseStepper *currentStepper;
+  WipeStepper wipeStepper;
+  AbstractStepper *currentStepper;
   Step emptyStep;
 
   void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
@@ -49,9 +51,6 @@ private:
   float azimuthStepSize;
   int marbleSizeInRadiusSteps;
 
-  void executeStepsToCenter();
-  void executeRadiusSteps(int radiusSteps);
-  void executeFullCircleSteps();
   void executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep);
 
 public:
@@ -59,7 +58,6 @@ public:
   void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
   void calibrate(float initialRadius, float initialAzimuth, float radiusStepSize, float azimuthStepSize);
   void startCommand(String &command);
-  void executeWipe();
   bool hasNextStep();
   void step();
   Point getPosition() const;

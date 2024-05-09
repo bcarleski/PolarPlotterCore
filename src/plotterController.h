@@ -29,11 +29,17 @@
 
 #define TOPIC_SUBSCRIPTION_COUNT 3
 
-enum CalibrationMode {
-  OFF,
-  ORIGIN,
-  RADIUS,
-  AZIMUTH
+enum PlotterState {
+  INITIALIZING,
+  DRAWING,
+  RETRIEVING,
+  PAUSED,
+  RESUMING,
+  MANUAL_RADIUS,
+  MANUAL_AZIMUTH,
+  CALIBRATING_ORIGIN,
+  CALIBRATING_RADIUS,
+  CALIBRATING_AZIMUTH
 };
 
 class PlotterController
@@ -50,12 +56,16 @@ private:
   int commandIndex;
   int calibrationRadiusSteps;
   int calibrationAzimuthSteps;
-  CalibrationMode calibrationMode;
+  bool isCalibrated;
+  PlotterState state;
 
   bool needsCommands();
+  bool isCalibrating();
+  bool isManual();
   void executeCommand(String& command);
-  void handleInternalCommand(String& command);
+  void handleControlCommand(String& command);
   void handleCalibrationCommand(String& command);
+  void handleManualCommand(String& command);
   void setDebug(String& command);
 
 public:

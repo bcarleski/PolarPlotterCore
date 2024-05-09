@@ -72,6 +72,13 @@ public:
     this->writeStatus(k, v);
   }
 
+  virtual void setRadiusStepSize(const float value) = 0;
+  virtual void setAzimuthStepSize(const float value) = 0;
+  virtual void setCurrentDrawing(const String &value) = 0;
+  virtual void setCurrentStep(const String &value) = 0;
+  virtual void setPosition(const String &value) = 0;
+  virtual void setState(const String &value) = 0;
+
 protected:
   virtual void writeStatus(const String &key, const String &value) = 0;
 };

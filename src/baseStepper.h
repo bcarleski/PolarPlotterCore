@@ -24,17 +24,10 @@
 #ifndef _POLARPLOTTERCORE_BASESTEPPER_H_
 #define _POLARPLOTTERCORE_BASESTEPPER_H_
 
-#ifndef __IN_TEST__
-#include <Arduino.h>
-#else
-#include "mockArduino.h"
-#endif
-
-#include "point.h"
-#include "step.h"
+#include "abstractStepper.h"
 #define NEXT_POINT_COUNT 8
 
-class BaseStepper
+class BaseStepper : public AbstractStepper
 {
 protected:
     float radiusStepSize;
@@ -79,6 +72,7 @@ public:
     virtual void startNewLine(Point &currentPosition, String &arguments);
     virtual bool hasStep();
     virtual Step& step();
+    using AbstractStepper::isFastStep;
 };
 
 #endif

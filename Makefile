@@ -10,6 +10,7 @@ SOURCES = test/runtests.cpp \
           src/circleStepper.cpp \
           src/lineStepper.cpp \
           src/spiralStepper.cpp \
+          src/wipeStepper.cpp \
           src/polarPlotter.cpp \
           src/plotterController.cpp
 
