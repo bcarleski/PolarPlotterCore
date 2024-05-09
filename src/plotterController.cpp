@@ -34,7 +34,11 @@ PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater
 void PlotterController::calibrate(double radiusStepSize, double azimuthStepSize)
 {
   state = RESUMING;
-  printer.println("Resuming after calibration");
+  printer.print("Resuming after calibration, radiusStepSize=");
+  printer.print(radiusStepSize, 8);
+  printer.print(", azimuthStepSize=");
+  printer.println(azimuthStepSize, 8);
+
   isCalibrated = true;
   statusUpdater.setState("Resuming");
   plotter.calibrate(0.0, 0.0, radiusStepSize, azimuthStepSize);
@@ -178,6 +182,19 @@ void PlotterController::handleCalibrationCommand(String& command) {
     case CALIBRATING_RADIUS:
       switch (chr)
       {
+        case 'M':
+        case 'm':
+          if (state == CALIBRATING_ORIGIN) {
+            String manualCalibration = command.substring(1);
+            int commaPosition = manualCalibration.indexOf(",");
+            calibrationRadiusSteps = manualCalibration.substring(0, commaPosition).toInt();
+            calibrationAzimuthSteps = manualCalibration.substring(commaPosition + 1).toInt();
+            printer.print("Using manual calibration, calibrationRadiusSteps=");
+            printer.print(calibrationRadiusSteps);
+            printer.print(", calibrationAzimuthSteps=");
+            printer.println(calibrationAzimuthSteps);
+          }
+          break;
         case 'A': // Accept
         case 'a':
           if (state == CALIBRATING_ORIGIN) {
@@ -224,16 +241,15 @@ void PlotterController::handleCalibrationCommand(String& command) {
     break;
   }
 
-  if (stepper) {
+  if (stepper && (azimuthSteps != 0 || radiusSteps != 0)) {
     const int aStep = azimuthSteps > 0 ? 1 : (azimuthSteps < 0 ? -1 : 0);
     const int rStep = radiusSteps > 0 ? 1 : (radiusSteps < 0 ? -1 : 0);
     const int maxSteps = abs(azimuthSteps) > abs(radiusSteps) ? abs(azimuthSteps) : abs(radiusSteps);
-    if (chr != 'C') {
-      printer.print("Moving, radiusSteps=");
-      printer.print(radiusSteps);
-      printer.print(", azimuthSteps=");
-      printer.println(azimuthSteps);
-    }
+
+    printer.print("Moving, radiusSteps=");
+    printer.print(radiusSteps);
+    printer.print(", azimuthSteps=");
+    printer.println(azimuthSteps);
 
     for (int i = 0; i < maxSteps; i++) {
       stepper(rStep, aStep, true);
