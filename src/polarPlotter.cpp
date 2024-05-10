@@ -154,6 +154,7 @@ void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, co
   {
     stepper(radiusStep, azimuthStep, fastStep);
   }
+
   updatePosition(newRadius, newAzimuth, position, &statusUpdater);
 }
 
@@ -182,7 +183,7 @@ String PolarPlotter::getHelpMessage()
          "D{#}          Set the debug level between 0-9 (0-Off, 9-Most Verbose)";
 }
 
-void printStep(const int radiusStep, const int azimuthStep, const bool fastStep, StatusUpdate* statusUpdater, ExtendedPrinter printer)
+void PolarPlotter::printStep(const int radiusStep, const int azimuthStep, const bool fastStep, StatusUpdate* statusUpdater, ExtendedPrinter printer)
 {
     printer.print("STEP: ");
     printer.print(radiusStep);
@@ -196,7 +197,7 @@ void printStep(const int radiusStep, const int azimuthStep, const bool fastStep,
     statusUpdater->status("STEP:", msg);
 }
 
-void updatePosition(const double newRadius, const double newAzimuth, Point &position, StatusUpdate* statusUpdater)
+void PolarPlotter::updatePosition(const double newRadius, const double newAzimuth, Point &position, StatusUpdate* statusUpdater)
 {
   position.repoint(newRadius, newAzimuth);
 

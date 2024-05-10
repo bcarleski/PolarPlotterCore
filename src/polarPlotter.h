@@ -52,6 +52,9 @@ private:
   double azimuthStepSize;
   int marbleSizeInRadiusSteps;
 
+  void printStep(const int radiusStep, const int azimuthStep, const bool fastStep, StatusUpdate* statusUpdater, ExtendedPrinter printer);
+  void updatePosition(const double newRadius, const double newAzimuth, Point &position, StatusUpdate* statusUpdater);
+
 public:
   PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps);
   void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));

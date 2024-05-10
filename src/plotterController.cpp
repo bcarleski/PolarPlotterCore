@@ -69,11 +69,13 @@ void PlotterController::performCycle()
   if (calibrating || manual || !plotter.hasNextStep())
   {
     if (this->needsCommands()) {
-      if (calibrating) {
-        String defaultCommand = "C";
+      String defaultCommand = ".";
 
+      if (calibrating) {
         this->handleCalibrationCommand(defaultCommand);
-      } else if (!manual && state != RETRIEVING) {
+      } else if (manual) {
+        this->handleManualCommand(defaultCommand);
+      } else if (state != RETRIEVING) {
         printer.println("Controller needs commands");
         lastTextState = "Retrieving Commands";
         statusUpdater.setState(lastTextState);
@@ -181,7 +183,7 @@ void PlotterController::handleCalibrationCommand(String& command) {
   int azimuthSteps = 0;
   int radiusSteps = 0;
 
-  if (chr != 'C') {
+  if (chr != '.') {
     printer.print("Got calibration command:");
     printer.println(command);
   }
@@ -256,7 +258,7 @@ void PlotterController::handleCalibrationCommand(String& command) {
     const int rStep = radiusSteps > 0 ? 1 : (radiusSteps < 0 ? -1 : 0);
     const int maxSteps = abs(azimuthSteps) > abs(radiusSteps) ? abs(azimuthSteps) : abs(radiusSteps);
 
-    if (chr != 'C') {
+    if (chr != '.') {
       printer.print("Moving, radiusSteps=");
       printer.print(radiusSteps);
       printer.print(", azimuthSteps=");
@@ -288,6 +290,11 @@ void PlotterController::handleManualCommand(String& command) {
   if (!isManual()) return;
 
   const char chr = command.charAt(0);
+  if (chr != '.') {
+    printer.print("Got manual command:");
+    printer.println(command);
+  }
+
 
   switch (chr)
   {
@@ -332,7 +339,7 @@ void PlotterController::handleManualCommand(String& command) {
       if (state == MANUAL_AZIMUTH) {
         manualAzimuthSteps += command.substring(1).toInt();
       } else if (state == MANUAL_RADIUS) {
-        manualRadiusSteps = command.substring(1).toInt();
+        manualRadiusSteps += command.substring(1).toInt();
       }
       break;
     default: break;
@@ -342,14 +349,17 @@ void PlotterController::handleManualCommand(String& command) {
     const int aStep = manualAzimuthSteps > 0 ? 1 : (manualAzimuthSteps < 0 ? -1 : 0);
     const int rStep = manualRadiusSteps > 0 ? 1 : (manualRadiusSteps < 0 ? -1 : 0);
 
-    printer.print("Manual stepping ");
-    printer.print(rStep);
-    printer.print(",");
-    printer.println(aStep);
+    if (chr != '.') {
+      printer.print("Manual stepping, radiusSteps=");
+      printer.print(manualRadiusSteps);
+      printer.print(", azimuthSteps=");
+      printer.println(manualAzimuthSteps);
+    }
+
     plotter.executeStep(rStep, aStep, true);
 
-    manualAzimuthSteps += aStep;
-    manualRadiusSteps += rStep;
+    manualAzimuthSteps -= aStep;
+    manualRadiusSteps -= rStep;
   }
 }
 
