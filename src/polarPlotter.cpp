@@ -57,6 +57,8 @@ void PolarPlotter::calibrate(double startingRadius, double startingAzimuth, doub
 void PolarPlotter::startCommand(String &command)
 {
   currentStepper = NULL;
+  currentStep = 0;
+  statusUpdater.setCurrentStep(currentStep);
  
   if (debugLevel >= 1)
   {
@@ -124,9 +126,6 @@ void PolarPlotter::step()
     return;
   }
 
-  currentStep++;
-  statusUpdater.setCurrentStep(currentStep);
-
   Step &step = currentStepper->step();
   const bool fastStep = currentStepper->isFastStep();
   return this->executeStep(step.getRadiusStep(), step.getAzimuthStep(), fastStep);
@@ -143,39 +142,19 @@ void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, co
   int radiusStep = radiusSteps;
   int azimuthStep = azimuthSteps;
 
-  if (newRadius >= maxRadius)
-  {
-    radiusStep = 0;
-  }
-  if (newRadius <= (radiusStepSize * 0.5)) {
-    newRadius = 0;
-  }
-  if (newAzimuth <= (azimuthStepSize * 0.5)) {
-    newAzimuth = 0;
-  }
+  currentStep++;
+  statusUpdater.setCurrentStep(currentStep);
 
-  if (debugLevel >= 3)
-  {
-    String msg = "";
-    msg = msg + radiusStep + "," + azimuthStep;
-    printer.print("STEP: ");
-    printer.print(radiusStep);
-    printer.print(",");
-    printer.println(azimuthStep);
-    statusUpdater.status("STEP:", msg);
-  }
-  if ((radiusStep != 0 || azimuthStep != 0) && this->stepper)
-  {
-    this->stepper(radiusStep, azimuthStep, fastStep);
-  }
-  position.repoint(newRadius, newAzimuth);
+  if (newRadius >= maxRadius) radiusStep = 0;
+  if (newRadius <= (radiusStepSize * 0.5)) newRadius = 0;
+  if (newAzimuth <= (azimuthStepSize * 0.5)) newAzimuth = 0;
 
-  String positionString = "";
-  double radius = position.getRadius();
-  double azimuth = position.getAzimuth();
-  positionString = positionString + radius + "x" + azimuth;
-  const String positionArg = positionString;
-  statusUpdater.setPosition(positionArg);
+  if (debugLevel >= 3) printStep(radiusStep, azimuthStep, fastStep, &statusUpdater, printer);
+  if ((radiusStep != 0 || azimuthStep != 0) && stepper)
+  {
+    stepper(radiusStep, azimuthStep, fastStep);
+  }
+  updatePosition(newRadius, newAzimuth, position, &statusUpdater);
 }
 
 Point PolarPlotter::getPosition() const
@@ -201,4 +180,29 @@ String PolarPlotter::getHelpMessage()
          "C{X},{Y},{D}  Draw a circular arc with center at the cartesian point (X,Y) having an angle of the given degress (-180 to 180)\n"
          "S{R},{D}      Draw a spiral using R units of radius change and D degrees around\n"
          "D{#}          Set the debug level between 0-9 (0-Off, 9-Most Verbose)";
+}
+
+void printStep(const int radiusStep, const int azimuthStep, const bool fastStep, StatusUpdate* statusUpdater, ExtendedPrinter printer)
+{
+    printer.print("STEP: ");
+    printer.print(radiusStep);
+    printer.print(",");
+    printer.print(azimuthStep);
+    printer.print(" / ");
+    printer.println(fastStep ? "fast" : "slow");
+
+    String msg = "";
+    msg = msg + radiusStep + "," + azimuthStep + " / " + (fastStep ? "fast" : "slow");
+    statusUpdater->status("STEP:", msg);
+}
+
+void updatePosition(const double newRadius, const double newAzimuth, Point &position, StatusUpdate* statusUpdater)
+{
+  position.repoint(newRadius, newAzimuth);
+
+  String positionString = "";
+  positionString = positionString + String(newRadius, 6) + "x" + String(newAzimuth, 6);
+
+  const String positionArg = positionString;
+  statusUpdater->setPosition(positionArg);
 }
