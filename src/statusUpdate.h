@@ -77,7 +77,7 @@ public:
   virtual void setCurrentDrawing(const String &value) = 0;
   virtual void setCurrentCommand(const String &value) = 0;
   virtual void setCurrentStep(const int value) = 0;
-  virtual void setPosition(const String &value) = 0;
+  virtual void setPosition(const double radius, const double azimuth) = 0;
   virtual void setState(const String &value) = 0;
 
 protected:

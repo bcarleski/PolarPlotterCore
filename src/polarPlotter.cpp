@@ -93,12 +93,9 @@ void PolarPlotter::startCommand(String &command)
     String arguments = command.substring(1);
     currentStepper->startNewLine(position, arguments);
 
-    String positionString = "";
-    double radius = this->position.getRadius();
-    double azimuth = this->position.getAzimuth();
-    positionString = positionString + String(radius, 6) + "x" + String(azimuth, 6);
-    const String positionArg = positionString;
-    statusUpdater.setPosition(positionArg);
+    const double radius = position.getRadius();
+    const double azimuth = position.getAzimuth();
+    statusUpdater.setPosition(radius, azimuth);
   }
 
   if (this->debugLevel >= 2)
@@ -200,10 +197,5 @@ void PolarPlotter::printStep(const int radiusStep, const int azimuthStep, const 
 void PolarPlotter::updatePosition(const double newRadius, const double newAzimuth, Point &position, StatusUpdate* statusUpdater)
 {
   position.repoint(newRadius, newAzimuth);
-
-  String positionString = "";
-  positionString = positionString + String(newRadius, 6) + "x" + String(newAzimuth, 6);
-
-  const String positionArg = positionString;
-  statusUpdater->setPosition(positionArg);
+  statusUpdater->setPosition(newRadius, newAzimuth);
 }
