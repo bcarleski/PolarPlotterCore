@@ -58,14 +58,14 @@ void PolarPlotter::startCommand(String &command)
 {
   currentStepper = NULL;
  
-  if (this->debugLevel >= 1)
+  if (debugLevel >= 1)
   {
     printer.print(" COMMAND - ");
     printer.println(command);
     statusUpdater.status("COMMAND", command);
   }
   const String cmd = command;
-  statusUpdater.setCurrentStep(cmd);
+  statusUpdater.setCurrentCommand(cmd);
 
   switch (command.charAt(0))
   {
@@ -94,7 +94,7 @@ void PolarPlotter::startCommand(String &command)
     String positionString = "";
     double radius = this->position.getRadius();
     double azimuth = this->position.getAzimuth();
-    positionString = positionString + radius + "x" + azimuth;
+    positionString = positionString + String(radius, 6) + "x" + String(azimuth, 6);
     const String positionArg = positionString;
     statusUpdater.setPosition(positionArg);
   }
@@ -112,24 +112,30 @@ bool PolarPlotter::hasNextStep()
 {
   return currentStepper != NULL && currentStepper->hasStep();
 }
+
+void PolarPlotter::clearStepper()
+{
+  currentStepper = NULL;
+}
+
 void PolarPlotter::step()
 {
   if (!this->hasNextStep()) {
     return;
   }
 
-  statusUpdater.setState("Drawing");
+  currentStep++;
+  statusUpdater.setCurrentStep(currentStep);
+
   Step &step = currentStepper->step();
   const bool fastStep = currentStepper->isFastStep();
-
   return this->executeStep(step.getRadiusStep(), step.getAzimuthStep(), fastStep);
 }
 
 void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep)
 {
-  Point pos = this->position;
-  double oldRadius = pos.getRadius();
-  double oldAzimuth = pos.getAzimuth();
+  double oldRadius = position.getRadius();
+  double oldAzimuth = position.getAzimuth();
   double newRadiusDelta = radiusSteps * this->radiusStepSize;
   double newAzimuthDelta = azimuthSteps * this->azimuthStepSize;
   double newRadius = oldRadius + newRadiusDelta;
@@ -137,7 +143,7 @@ void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, co
   int radiusStep = radiusSteps;
   int azimuthStep = azimuthSteps;
 
-  if (newRadius >= this->maxRadius)
+  if (newRadius >= maxRadius)
   {
     radiusStep = 0;
   }
@@ -148,40 +154,28 @@ void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, co
     newAzimuth = 0;
   }
 
-  if (this->debugLevel >= 3)
+  if (debugLevel >= 3)
   {
     String msg = "";
     msg = msg + radiusStep + "," + azimuthStep;
-    this->printer.print("STEP: ");
-    this->printer.print(radiusStep);
-    this->printer.print(",");
-    this->printer.println(azimuthStep);
-    this->statusUpdater.status("STEP:", msg);
+    printer.print("STEP: ");
+    printer.print(radiusStep);
+    printer.print(",");
+    printer.println(azimuthStep);
+    statusUpdater.status("STEP:", msg);
   }
   if ((radiusStep != 0 || azimuthStep != 0) && this->stepper)
   {
     this->stepper(radiusStep, azimuthStep, fastStep);
   }
-  this->position.repoint(newRadius, newAzimuth);
+  position.repoint(newRadius, newAzimuth);
 
-  if (this->debugLevel >= 4)
-  {
-    pos = this->position;
-    this->printer.print(" Position", pos);
-    this->printer.print(", from=(");
-    this->printer.print(oldRadius, 4);
-    this->printer.print(", ");
-    this->printer.print(oldAzimuth, 4);
-    this->printer.print("), delta=(");
-    this->printer.print(newRadiusDelta, 4);
-    this->printer.print(", ");
-    this->printer.print(newAzimuthDelta, 4);
-    this->printer.print("), to=(");
-    this->printer.print(newRadius, 4);
-    this->printer.print(", ");
-    this->printer.print(newAzimuth, 4);
-    this->printer.println(")");
-  }
+  String positionString = "";
+  double radius = position.getRadius();
+  double azimuth = position.getAzimuth();
+  positionString = positionString + radius + "x" + azimuth;
+  const String positionArg = positionString;
+  statusUpdater.setPosition(positionArg);
 }
 
 Point PolarPlotter::getPosition() const

@@ -46,12 +46,11 @@ private:
   void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
   unsigned int debugLevel;
   Point position;
+  int currentStep;
   double maxRadius;
   double radiusStepSize;
   double azimuthStepSize;
   int marbleSizeInRadiusSteps;
-
-  void executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep);
 
 public:
   PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps);
@@ -59,7 +58,9 @@ public:
   void calibrate(double initialRadius, double initialAzimuth, double radiusStepSize, double azimuthStepSize);
   void startCommand(String &command);
   bool hasNextStep();
+  void clearStepper();
   void step();
+  void executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep);
   Point getPosition() const;
   void setDebug(unsigned int level);
   static String getHelpMessage();

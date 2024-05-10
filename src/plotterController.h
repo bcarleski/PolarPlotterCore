@@ -34,7 +34,6 @@ enum PlotterState {
   DRAWING,
   RETRIEVING,
   PAUSED,
-  RESUMING,
   MANUAL_RADIUS,
   MANUAL_AZIMUTH,
   CALIBRATING_ORIGIN,
@@ -56,8 +55,13 @@ private:
   int commandIndex;
   int calibrationRadiusSteps;
   int calibrationAzimuthSteps;
+  int manualRadiusSteps;
+  int manualAzimuthSteps;
+  double radiusStepSize;
   bool isCalibrated;
   PlotterState state;
+  PlotterState lastState;
+  char* lastTextState;
 
   bool needsCommands();
   bool isCalibrating();
@@ -77,6 +81,7 @@ public:
   bool canCycle();
   void newDrawing(String &drawing);
   void addCommand(String &command);
+  bool isPaused() const { return state == PAUSED; }
 };
 
 #endif

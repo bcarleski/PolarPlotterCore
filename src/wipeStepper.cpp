@@ -105,7 +105,7 @@ void WipeStepper::spiralIn()
     {
         if (currentSpiralInRadiusStep < edgeToCenterRadiusSteps)
         {
-            currentStep.setSteps(1, 0);
+            currentStep.setSteps(-1, 0);
             currentSpiralInRadiusStep++;
             return;
         }
@@ -117,7 +117,7 @@ void WipeStepper::spiralIn()
     int spiralInRadiusStep = round(currentSpiralInAzimuthStep * spiralInAzimuthStepsPerRadiusStep);
     if (spiralInRadiusStep > currentSpiralInRadiusStep)
     {
-        currentStep.setSteps(1, 1);
+        currentStep.setSteps(-1, 1);
         currentSpiralInRadiusStep++;
     } else {
         currentStep.setSteps(0, 1);

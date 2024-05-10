@@ -66,7 +66,7 @@ public:
     void startNewLine(Point &currentPosition, String &arguments);
     bool hasStep();
     Step& step();
-    bool isFastStep() { return false; }
+    bool isFastStep() { return true; }
 };
 
 #endif
