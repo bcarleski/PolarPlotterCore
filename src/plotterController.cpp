@@ -225,8 +225,6 @@ void PlotterController::handleCalibrationCommand(String& command) {
         case 'o':
           radiusSteps = command.substring(1).toInt();
           break;
-        case '+': radiusSteps = 1; break;
-        case '-': radiusSteps = -1; break;
         default: azimuthSteps = state == CALIBRATING_ORIGIN ? 1 : 0; break;
       }
 
@@ -246,29 +244,15 @@ void PlotterController::handleCalibrationCommand(String& command) {
         case 'o':
           azimuthSteps = command.substring(1).toInt();
           break;
-        case '+': azimuthSteps = 1; break;
-        case '-': azimuthSteps = -1; break;
       }
       calibrationAzimuthSteps += azimuthSteps;
     break;
   }
 
-  if (stepper && (azimuthSteps != 0 || radiusSteps != 0)) {
-    const int aStep = azimuthSteps > 0 ? 1 : (azimuthSteps < 0 ? -1 : 0);
-    const int rStep = radiusSteps > 0 ? 1 : (radiusSteps < 0 ? -1 : 0);
-    const int maxSteps = abs(azimuthSteps) > abs(radiusSteps) ? abs(azimuthSteps) : abs(radiusSteps);
+  manualAzimuthSteps += azimuthSteps;
+  manualRadiusSteps += radiusSteps;
 
-    if (chr != '.') {
-      printer.print("Moving, radiusSteps=");
-      printer.print(radiusSteps);
-      printer.print(", azimuthSteps=");
-      printer.println(azimuthSteps);
-    }
-
-    for (int i = 0; i < maxSteps; i++) {
-      stepper(rStep, aStep, true);
-    }
-  }
+  manualStep(chr != '.');
 
   if (!isCalibrating()) {
     printer.print("Finished calibration, radiusSteps=");
@@ -345,11 +329,15 @@ void PlotterController::handleManualCommand(String& command) {
     default: break;
   }
 
+  manualStep(chr != '.');
+}
+
+void PlotterController::manualStep(const bool printStep) {
   if (manualAzimuthSteps != 0 || manualRadiusSteps != 0) {
     const int aStep = manualAzimuthSteps > 0 ? 1 : (manualAzimuthSteps < 0 ? -1 : 0);
     const int rStep = manualRadiusSteps > 0 ? 1 : (manualRadiusSteps < 0 ? -1 : 0);
 
-    if (chr != '.') {
+    if (printStep) {
       printer.print("Manual stepping, radiusSteps=");
       printer.print(manualRadiusSteps);
       printer.print(", azimuthSteps=");

@@ -66,6 +66,7 @@ private:
   bool needsCommands();
   bool isCalibrating();
   bool isManual();
+  void manualStep(const bool printStep);
   void executeCommand(String& command);
   void handleControlCommand(String& command);
   void handleCalibrationCommand(String& command);
