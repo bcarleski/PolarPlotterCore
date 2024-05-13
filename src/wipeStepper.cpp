@@ -21,6 +21,10 @@
     SOFTWARE.
 */
 
+#ifdef __SHOW_STEP_DETAILS__
+#include <iostream>
+#include <iomanip>
+#endif
 #include "wipeStepper.h"
 #define WIPE_LOOPS 15
 
@@ -37,6 +41,10 @@ void WipeStepper::startNewLine(Point &currentPosition, String &arguments)
     spiralInAzimuthSteps = fullCircleAzimuthSteps * WIPE_LOOPS;
     double spiralInRadiusSteps = round(maxRadius / radiusStepSize);
     spiralInAzimuthStepsPerRadiusStep = spiralInAzimuthSteps / spiralInRadiusSteps;
+
+#ifdef __SHOW_STEP_DETAILS__
+    std::cout << "  Wiping.  stepsToEdge=" << stepsToEdge << ", fullCircleAzimuthSteps=" << fullCircleAzimuthSteps << ", edgeToCenterRadiusSteps=" << edgeToCenterRadiusSteps << ", spiralInAzimuthSteps=" << spiralInAzimuthSteps << ", spiralInAzimuthStepsPerRadiusStep=" << spiralInAzimuthStepsPerRadiusStep << std::endl;
+#endif
 
     currentFullCircleStep = 0;
     currentSpiralInAzimuthStep = 0;
@@ -118,7 +126,7 @@ void WipeStepper::spiralIn()
         return;
     }
 
-    int spiralInRadiusStep = round(currentSpiralInAzimuthStep * spiralInAzimuthStepsPerRadiusStep);
+    int spiralInRadiusStep = round(currentSpiralInAzimuthStep / spiralInAzimuthStepsPerRadiusStep);
     if (spiralInRadiusStep > currentSpiralInRadiusStep)
     {
         currentStep.setSteps(-1, 1);

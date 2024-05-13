@@ -147,13 +147,14 @@ void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, co
   statusUpdater.setCurrentStep(currentStep);
 
   if (newRadius >= maxRadius) { radiusStep = 0; newRadius = maxRadius; }
-  if (newRadius < (radiusStepSize * 0.5)) newRadius = 0;
+  if (newRadius < (radiusStepSize * 0.5)) { radiusStep = 0; newRadius = 0; }
   if (abs(newAzimuth) < (azimuthStepSize * 0.5)) newAzimuth = 0;
 
 
 #ifdef __SHOW_STEP_DETAILS__
     std::cout << "  Stepping.  Original: (" << radiusSteps << "," << azimuthSteps << "), Adjusted: (" << radiusStep << ", " << azimuthStep << "), Fast: " << fastStep << std::endl;
 #endif
+
   if (debugLevel >= 3) printStep(radiusStep, azimuthStep, fastStep, &statusUpdater, printer);
   if ((radiusStep != 0 || azimuthStep != 0) && stepper)
   {
