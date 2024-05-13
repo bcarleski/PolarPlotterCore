@@ -16,14 +16,14 @@ public:
 	String & operator = (const String &rhs);
 	String & operator = (const char *cstr);
 	String & operator + (const String &rhs)	{return (*this);}
-	String & operator + (const char *cstr)		{return (*this);}
+	String & operator + (const char *cstr)	{return (*this);}
 	String & operator + (char c)			{return (*this);}
-	String & operator + (unsigned char num)		{return (*this);}
+	String & operator + (unsigned char num)	{return (*this);}
 	String & operator + (int num)			{return (*this);}
-	String & operator + (unsigned int num)		{return (*this);}
+	String & operator + (unsigned int num)	{return (*this);}
 	String & operator + (long num)			{return (*this);}
 	String & operator + (unsigned long num)	{return (*this);}
-	String & operator + (double num)		{return (*this);}
+	String & operator + (float num)		    {return (*this);}
 	String & operator + (double num)		{return (*this);}
 
     const char* c_str() const;

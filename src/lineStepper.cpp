@@ -41,7 +41,7 @@ bool LineStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arg
 
 double LineStepper::findDistanceFromPointOnLineToFinish(Point &point)
 {
-    return this->findDistanceBetweenPoints(point, this->finish);
+    return findDistanceBetweenPoints(point, this->finish);
 }
 
 void LineStepper::setClosestPointOnLine(Point &point, Point &closestPoint)

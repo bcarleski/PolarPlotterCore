@@ -3,20 +3,19 @@
 #endif
 #include "plotterController.h"
 #include "fakeStatus.h"
+#include <iomanip>
 #include <iostream>
 #include <stdlib.h>
 
-#define RADIUS_STEPPER_STEPS_PER_ROTATION 1600
-#define RADIUS_GEAR_RATIO 1.0                  // # of drive gear teeth / # of motor gear teeth, i.e. if the drive shaft gear has 20 teeth, and the motor has 10, this should be 2.0
-#define RADIUS_ROTATIONS_TO_MAX_RADIUS 1.0     // the number of complete turns of the drive gear that it takes to go from the center to the maximum radius
+#define MAX_RADIUS 1000
+#define MARBLE_SIZE_IN_RADIUS_STEPS 650
+#define MAX_RADIUS_STEPS 10500
+#define FULL_CIRCLE_AZIMUTH_STEPS 4810
+//#define __SHOW_STEP_DETAILS__
 
-#define AZIMUTH_STEPPER_STEPS_PER_ROTATION 1600
-#define AZIMUTH_GEAR_RATIO 1.0                 // # of drive gear teeth / # of motor gear teeth, i.e. if the drive shaft gear has 20 teeth, and the motor has 10, this should be 2.0
-
-#define MAX_RADIUS 600
-#define RADIUS_STEP_SIZE MAX_RADIUS / RADIUS_ROTATIONS_TO_MAX_RADIUS / RADIUS_STEPPER_STEPS_PER_ROTATION / RADIUS_GEAR_RATIO
-#define AZIMUTH_STEP_SIZE 2 * PI / AZIMUTH_STEPPER_STEPS_PER_ROTATION / AZIMUTH_GEAR_RATIO
-#define MARBLE_SIZE_IN_RADIUS_STEPS 80
+const double maxRadius = MAX_RADIUS;
+const double radiusStepSize = maxRadius / MAX_RADIUS_STEPS;
+const double azimuthStepSize = (2 * PI) / FULL_CIRCLE_AZIMUTH_STEPS;
 
 using namespace std;
 
@@ -25,23 +24,24 @@ int main(int argc, char **argv) {
 
     Print print;
     StatusUpdater status;
-    PlotterController controller(print, status, MAX_RADIUS, RADIUS_STEP_SIZE, AZIMUTH_STEP_SIZE, MARBLE_SIZE_IN_RADIUS_STEPS);
+    PlotterController plotter(print, status, MAX_RADIUS, MARBLE_SIZE_IN_RADIUS_STEPS);
     String drawing("TestDrawing");
 
     cout << "Initializing MAX_RADIUS: " << MAX_RADIUS << "\n";
-    cout << "Initializing RADIUS_STEP_SIZE: " << RADIUS_STEP_SIZE << "\n";
-    cout << "Initializing AZIMUTH_STEP_SIZE: " << AZIMUTH_STEP_SIZE << "\n";
+    cout << "Initializing RADIUS_STEP_SIZE: " << setprecision(12) << radiusStepSize << "\n";
+    cout << "Initializing AZIMUTH_STEP_SIZE: " << setprecision(12) << azimuthStepSize << "\n";
     cout << "Initializing MARBLE_SIZE_IN_RADIUS_STEPS: " << MARBLE_SIZE_IN_RADIUS_STEPS << "\n";
     cout << "Setting drawing: " << drawing.c_str() << "\n";
-    controller.newDrawing(drawing);
+    plotter.calibrate(radiusStepSize, azimuthStepSize);
+    plotter.newDrawing(drawing);
     for (int i = 1; i < argc; i++) {
         String command(argv[i]);
         cout << "Adding command: " << command.c_str() << "\n";
-        controller.addCommand(command);
+        plotter.addCommand(command);
     }
 
     cout << "Executing commands\n";
-    while (controller.canCycle()) {
-        controller.performCycle();
+    while (plotter.canCycle()) {
+        plotter.performCycle();
     }
 }

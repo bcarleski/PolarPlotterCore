@@ -22,6 +22,10 @@
 */
 
 #include "baseStepper.h"
+#ifdef __SHOW_STEP_DETAILS__
+#include <iostream>
+#include <iomanip>
+#endif
 
 void BaseStepper::calibrate(double radiusStepSize, double azimuthStepSize)
 {
@@ -30,30 +34,33 @@ void BaseStepper::calibrate(double radiusStepSize, double azimuthStepSize)
 }
 
 bool BaseStepper::hasStep() {
+    if (needNextStep) {
+        currentPosition.cloneFrom(nextPosition);
+
+        this->computeNextStep();
+
+        currentDistanceToFinish = nextDistanceToFinish;
+        needNextStep = false;
+    }
+
     return nextStep.hasStep();
 }
 
 Step &BaseStepper::step() {
-    currentStep.setSteps(nextStep);
-    currentPosition.cloneFrom(nextPosition);
-    currentDistanceToFinish = nextDistanceToFinish;
-
-    this->computeNextStep();
-
-    return currentStep;
+    needNextStep = true;
+    return nextStep;
 }
 
 void BaseStepper::startNewLine(Point &currentPosition, String &arguments) {
     this->snapPointToClosestPossiblePosition(currentPosition);
     this->start.cloneFrom(currentPosition);
     this->currentPosition.cloneFrom(currentPosition);
+    this->nextPosition.cloneFrom(currentPosition);
 
     if (!this->parseArgumentsAndSetFinish(currentPosition, arguments)) {
         currentDistanceToFinish = 0;
-        currentStep.setSteps(0, 0);
         nextStep.setSteps(0, 0);
         nextDistanceToFinish = 0;
-        nextPosition.cloneFrom(currentPosition);
         return;
     }
 
@@ -66,15 +73,21 @@ void BaseStepper::startNewLine(Point &currentPosition, String &arguments) {
         originExitAzimuth = currentPosition.getAzimuth();
     }
 
-    currentStep.setSteps(1, 1);
-    this->computeNextStep();
+#ifdef __SHOW_STEP_DETAILS__
+    double r = finish.getRadius();
+    double a = finish.getAzimuth();
+    double x = finish.getX();
+    double y = finish.getY();
+
+    std::cout << std::setprecision(8) << "    Finish: (" << r << "," << a << "," << x << "," << y << ") - " << std::setprecision(14) << currentDistanceToFinish << " - " << originExitAzimuth << std::endl;
+#endif
+
+    needNextStep = true;
 }
 
 void BaseStepper::computeNextStep() {
-    if (currentStep.hasStep()) {
-        this->determineNextPositionAndDistance();
-        this->setupNextStepFromNextPosition();
-    }
+    this->determineNextPositionAndDistance();
+    this->setupNextStepFromNextPosition();
 }
 
 void BaseStepper::determineNextPositionAndDistance() {
@@ -151,6 +164,12 @@ void BaseStepper::setupNextStepFromNextPosition() {
 void BaseStepper::setupNextPoints() {
     double curR = currentPosition.getRadius();
     double curA = currentPosition.getAzimuth();
+#ifdef __SHOW_STEP_DETAILS__
+    double x = currentPosition.getX();
+    double y = currentPosition.getY();
+
+    std::cout << std::setprecision(8) << "    Current: (" << curR << "," << curA << "," << x << "," << y << ") - " << std::setprecision(14) << currentDistanceToFinish << std::endl;
+#endif
 
     nextPoints[0].repoint(curR - radiusStepSize, curA - azimuthStepSize);
     nextPoints[1].repoint(curR - radiusStepSize, curA);
@@ -173,6 +192,19 @@ void BaseStepper::findPointsCloserToFinish() {
 
     for (int i = 0; i < NEXT_POINT_COUNT; i++) {
         double distanceToFinish = this->findDistanceFromPointOnLineToFinish(nextClosestPointsOnLine[i]);
+#ifdef __SHOW_STEP_DETAILS__
+    double rC = nextClosestPointsOnLine[i].getRadius();
+    double aC = nextClosestPointsOnLine[i].getAzimuth();
+    double xC = nextClosestPointsOnLine[i].getX();
+    double yC = nextClosestPointsOnLine[i].getY();
+    double rN = nextPoints[i].getRadius();
+    double aN = nextPoints[i].getAzimuth();
+    double xN = nextPoints[i].getX();
+    double yN = nextPoints[i].getY();
+    bool closer = distanceToFinish < currentDistanceToFinish;
+
+    std::cout << std::setprecision(8) << "    Distance to (" << rN << "," << aN << "," << xN << "," << yN << ") / (" << rC << "," << aC << "," << xC << "," << yC << ") - " << std::setprecision(14) << distanceToFinish << " / " << closer << std::endl;
+#endif
         if (distanceToFinish < currentDistanceToFinish) {
             pointsCloserToFinish[pointsCloserToFinishCount] = nextPoints[i];
             pointsCloserToFinishOnLine[pointsCloserToFinishCount] = nextClosestPointsOnLine[i];

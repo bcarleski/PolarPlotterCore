@@ -197,7 +197,7 @@ void PlotterController::handleCalibrationCommand(String& command) {
         case 'e':
           if (state == CALIBRATING_ORIGIN) {
             String manualCalibration = command.substring(1);
-            int commaPosition = manualCalibration.indexOf(",");
+            int commaPosition = manualCalibration.indexOf(',');
             calibrationRadiusSteps = manualCalibration.substring(0, commaPosition).toInt();
             calibrationAzimuthSteps = manualCalibration.substring(commaPosition + 1).toInt();
             printer.print("Using explicit calibration, calibrationRadiusSteps=");

@@ -64,6 +64,10 @@ Step &WipeStepper::step()
     case SPIRALING_IN:
         spiralIn();
         break;
+    case WIPE_INITIALIZING:
+    case FINISHED:
+    default:
+        break;
     }
 
     return currentStep;

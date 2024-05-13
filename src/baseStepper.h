@@ -38,12 +38,12 @@ protected:
     Point finish;
 
     Point currentPosition;
-    Step currentStep;
     double currentDistanceToFinish;
 
     Point nextPosition;
     Step nextStep;
     double nextDistanceToFinish;
+    bool needNextStep;
 
     Point nextPoints[NEXT_POINT_COUNT];
     Point nextClosestPointsOnLine[NEXT_POINT_COUNT];
