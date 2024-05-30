@@ -32,7 +32,7 @@ public:
 	int indexOf( char ch, unsigned int fromIndex ) const;
     String substring( unsigned int beginIndex ) const { return substring(beginIndex, this->length); };
 	String substring( unsigned int beginIndex, unsigned int endIndex ) const;
-    double toFloat() const;
-    int toInt() const;
+    double toDouble() const;
+    long toInt() const;
 };
 #endif

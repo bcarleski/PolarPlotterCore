@@ -22,7 +22,7 @@
 */
 
 #include "polarPlotter.h"
-#ifdef __SHOW_STEP_DETAILS__
+#if defined(__SHOW_STEP_DETAILS__) || defined(__SHOW_STEP__)
 #include <iostream>
 #include <iomanip>
 #endif
@@ -40,9 +40,9 @@ PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double m
 {
 }
 
-void PolarPlotter::onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep))
+void PolarPlotter::onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep))
 {
-  this->stepper = stepper;
+  this->mover = mover;
 }
 
 void PolarPlotter::calibrate(double startingRadius, double startingAzimuth, double radiusStepSize, double azimuthStepSize)
@@ -64,12 +64,6 @@ void PolarPlotter::startCommand(String &command)
   currentStep = 0;
   statusUpdater.setCurrentStep(currentStep);
  
-  if (debugLevel >= 1)
-  {
-    printer.print(" COMMAND - ");
-    printer.println(command);
-    statusUpdater.status("COMMAND", command);
-  }
   const String cmd = command;
   statusUpdater.setCurrentCommand(cmd);
 
@@ -101,14 +95,6 @@ void PolarPlotter::startCommand(String &command)
     const double azimuth = position.getAzimuth();
     statusUpdater.setPosition(radius, azimuth);
   }
-
-  if (this->debugLevel >= 2)
-  {
-    this->printer.print(" HAS STEPPER: ");
-    this->printer.println(currentStepper != NULL);
-    this->printer.print(" HAS STEPS: ");
-    this->printer.println(this->hasNextStep());
-  }
 }
 
 bool PolarPlotter::hasNextStep()
@@ -123,42 +109,44 @@ void PolarPlotter::clearStepper()
 
 void PolarPlotter::step()
 {
-  if (!this->hasNextStep()) {
+  if (!hasNextStep()) {
     return;
   }
 
   Step &step = currentStepper->step();
   const bool fastStep = currentStepper->isFastStep();
-  return this->executeStep(step.getRadiusStep(), step.getAzimuthStep(), fastStep);
+  return moveTo(step.getRadiusStep(), step.getAzimuthStep(), fastStep);
 }
 
-void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep)
+void PolarPlotter::moveTo(const long radiusSteps, const long azimuthSteps, const bool fastStep)
 {
   double oldRadius = position.getRadius();
   double oldAzimuth = position.getAzimuth();
-  double newRadiusDelta = radiusSteps * this->radiusStepSize;
-  double newAzimuthDelta = azimuthSteps * this->azimuthStepSize;
+  double newRadiusDelta = radiusSteps * radiusStepSize;
+  double newAzimuthDelta = azimuthSteps * azimuthStepSize;
   double newRadius = oldRadius + newRadiusDelta;
   double newAzimuth = oldAzimuth + newAzimuthDelta;
-  int radiusStep = radiusSteps;
-  int azimuthStep = azimuthSteps;
+  long radiusStep = radiusSteps;
+  long azimuthStep = azimuthSteps;
 
   currentStep++;
   statusUpdater.setCurrentStep(currentStep);
 
-  if (newRadius >= maxRadius) { radiusStep = 0; newRadius = maxRadius; }
-  if (newRadius < (radiusStepSize * 0.5)) { radiusStep = 0; newRadius = 0; }
+  if (newRadius >= maxRadius) { radiusStep = round((maxRadius - oldRadius) / radiusStepSize); newRadius = maxRadius; }
+  if (newRadius < (radiusStepSize * 0.5)) { radiusStep = -round(oldRadius / radiusStepSize); newRadius = 0; }
   if (abs(newAzimuth) < (azimuthStepSize * 0.5)) newAzimuth = 0;
 
 
 #ifdef __SHOW_STEP_DETAILS__
     std::cout << "  Stepping.  Original: (" << radiusSteps << "," << azimuthSteps << "), Adjusted: (" << radiusStep << ", " << azimuthStep << "), Fast: " << fastStep << std::endl;
 #endif
+#ifdef __SHOW_STEP__
+    std::cout << "STEP: " << radiusStep << "," << azimuthStep << std::endl;
+#endif
 
-  if (debugLevel >= 3) printStep(radiusStep, azimuthStep, fastStep, &statusUpdater, printer);
-  if ((radiusStep != 0 || azimuthStep != 0) && stepper)
+  if ((radiusStep != 0 || azimuthStep != 0) && mover)
   {
-    stepper(radiusStep, azimuthStep, fastStep);
+    mover(radiusStep, azimuthStep, fastStep);
   }
 
   updatePosition(newRadius, newAzimuth, position, &statusUpdater);
@@ -166,17 +154,7 @@ void PolarPlotter::executeStep(const int radiusSteps, const int azimuthSteps, co
 
 Point PolarPlotter::getPosition() const
 {
-  return this->position;
-}
-
-void PolarPlotter::setDebug(unsigned int level)
-{
-  this->debugLevel = level;
-  if (level > 0)
-  {
-    this->printer.print(" Set debug level to ");
-    this->printer.println(level);
-  }
+  return position;
 }
 
 String PolarPlotter::getHelpMessage()
@@ -189,7 +167,7 @@ String PolarPlotter::getHelpMessage()
          "D{#}          Set the debug level between 0-9 (0-Off, 9-Most Verbose)";
 }
 
-void PolarPlotter::printStep(const int radiusStep, const int azimuthStep, const bool fastStep, StatusUpdate* statusUpdater, ExtendedPrinter printer)
+void PolarPlotter::printStep(const long radiusStep, const long azimuthStep, const bool fastStep, StatusUpdate* statusUpdater, ExtendedPrinter printer)
 {
     printer.print("STEP: ");
     printer.print(radiusStep);

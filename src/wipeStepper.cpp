@@ -37,19 +37,11 @@ void WipeStepper::startNewLine(Point &currentPosition, String &arguments)
     state = MOVING_TO_EDGE;
     stepsToEdge = round((maxRadius - currentPosition.getRadius()) / radiusStepSize);
     fullCircleAzimuthSteps = round((2 * PI) / azimuthStepSize);
-    edgeToCenterRadiusSteps = round(maxRadius / radiusStepSize);
     spiralInAzimuthSteps = fullCircleAzimuthSteps * WIPE_LOOPS;
-    double spiralInRadiusSteps = round(maxRadius / radiusStepSize);
-    spiralInAzimuthStepsPerRadiusStep = spiralInAzimuthSteps / spiralInRadiusSteps;
 
 #ifdef __SHOW_STEP_DETAILS__
-    std::cout << "  Wiping.  stepsToEdge=" << stepsToEdge << ", fullCircleAzimuthSteps=" << fullCircleAzimuthSteps << ", edgeToCenterRadiusSteps=" << edgeToCenterRadiusSteps << ", spiralInAzimuthSteps=" << spiralInAzimuthSteps << ", spiralInAzimuthStepsPerRadiusStep=" << spiralInAzimuthStepsPerRadiusStep << std::endl;
+    std::cout << "  Wiping.  stepsToEdge=" << stepsToEdge << ", fullCircleAzimuthSteps=" << fullCircleAzimuthSteps << ", spiralInAzimuthSteps=" << spiralInAzimuthSteps << std::endl;
 #endif
-
-    currentFullCircleStep = 0;
-    currentSpiralInAzimuthStep = 0;
-    currentSpiralInRadiusStep = 0;
-    currentStepToEdge = 0;
 }
 
 bool WipeStepper::hasStep()
@@ -89,50 +81,18 @@ void WipeStepper::calibrate(double radiusStepSize, double azimuthStepSize)
 
 void WipeStepper::stepToEdge()
 {
-    if (currentStepToEdge >= stepsToEdge)
-    {
-        state = FULL_CIRCLE;
-        return;
-    }
-
-    currentStep.setSteps(1, 0);
-    currentStepToEdge++;
+    currentStep.setSteps(stepsToEdge, 0);
+    state = FULL_CIRCLE;
 }
 
 void WipeStepper::fullCircle()
 {
-    if (currentFullCircleStep >= fullCircleAzimuthSteps)
-    {
-        state = SPIRALING_IN;
-        return;
-    }
-
-    currentStep.setSteps(0, 1);
-    currentFullCircleStep++;
+    currentStep.setSteps(0, fullCircleAzimuthSteps);
+    state = SPIRALING_IN;
 }
 
 void WipeStepper::spiralIn()
 {
-    if (currentSpiralInAzimuthStep >= spiralInAzimuthSteps)
-    {
-        if (currentSpiralInRadiusStep < edgeToCenterRadiusSteps)
-        {
-            currentStep.setSteps(-1, 0);
-            currentSpiralInRadiusStep++;
-            return;
-        }
-
-        state = FINISHED;
-        return;
-    }
-
-    int spiralInRadiusStep = round(currentSpiralInAzimuthStep / spiralInAzimuthStepsPerRadiusStep);
-    if (spiralInRadiusStep > currentSpiralInRadiusStep)
-    {
-        currentStep.setSteps(-1, 1);
-        currentSpiralInRadiusStep++;
-    } else {
-        currentStep.setSteps(0, 1);
-    }
-    currentSpiralInAzimuthStep++;
+    currentStep.setSteps(-stepsToEdge, spiralInAzimuthSteps);
+    state = FINISHED;
 }

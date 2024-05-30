@@ -27,14 +27,15 @@
 class Step
 {
 private:
-  int state;
+  long radiusSteps;
+  long azimuthSteps;
 
 public:
   Step();
-  void setSteps(int radiusStep, int azimuthStep);
+  void setSteps(long radiusStep, long azimuthStep);
   void setSteps(Step &other);
-  int getRadiusStep() const;
-  int getAzimuthStep() const;
+  long getRadiusStep() const;
+  long getAzimuthStep() const;
   bool hasStep() const;
 };
 

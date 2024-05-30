@@ -22,32 +22,29 @@
 */
 
 #include "spiralStepper.h"
+#ifdef __SHOW_STEP_DETAILS__
+#include <iostream>
+#include <iomanip>
+#endif
 
 bool SpiralStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arguments) {
     int comma = arguments.indexOf(',');
     if (comma <= 0) return false;
 
-    double radiusOffset = arguments.substring(0, comma).toFloat();
-    double degreeOffset = arguments.substring(comma + 1).toFloat();
+    double radiusOffset = arguments.substring(0, comma).toDouble();
+    double degreeOffset = arguments.substring(comma + 1).toDouble();
     double azimuthOffset = (degreeOffset / 180) * PI;
 
     if ((currentPosition.getRadius() + radiusOffset) < 0) {
         radiusOffset = currentPosition.getRadius() * -1;
     }
 
-    radiusStep = radiusOffset >= 0 ? 1 : -1;
-    azimuthStep = azimuthOffset >= 0 ? 1 : -1;
-
-    radiusSteps = abs(round(radiusOffset / radiusStepSize));
-    azimuthSteps = abs(round(azimuthOffset / azimuthStepSize));
-    maxSteps = radiusSteps > azimuthSteps ? radiusSteps : azimuthSteps;
-
-    double totalSteps = maxSteps;
-    radiusStepFrequency = radiusSteps / totalSteps;
-    azimuthStepFrequency = azimuthSteps / totalSteps;
-    radiusStepsTaken = 0;
-    azimuthStepsTaken = 0;
-    currentStep = 0;
+    radiusSteps = (long)round(radiusOffset / radiusStepSize);
+    azimuthSteps = (long)round(azimuthOffset / azimuthStepSize);
+    stepped = false;
+#ifdef __SHOW_STEP_DETAILS__
+    std::cout << "    Spiral Step: (" << radiusSteps << "," << azimuthSteps << ")" << std::endl;
+#endif
 
     finish.repoint(currentPosition.getRadius() + radiusOffset, currentPosition.getAzimuth() + azimuthOffset);
 
@@ -56,26 +53,13 @@ bool SpiralStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &a
 
 void SpiralStepper::computeNextStep()
 {
-    if (currentStep >= maxSteps) {
+    if (stepped) {
         nextStep.setSteps(0, 0);
         return;
     }
 
-    currentStep++;
-    int expectedRadiusSteps = radiusStepsTaken < radiusSteps ? round(currentStep * radiusStepFrequency) : radiusStepsTaken;
-    int expectedAzimuthSteps = azimuthStepsTaken < azimuthSteps ? round(currentStep * azimuthStepFrequency) : azimuthStepsTaken;
-
-    int rStep = 0, aStep = 0;
-    if (expectedRadiusSteps > radiusStepsTaken) {
-        rStep = radiusStep;
-        radiusStepsTaken = expectedRadiusSteps;
-    }
-    if (expectedAzimuthSteps > azimuthStepsTaken) {
-        aStep = azimuthStep;
-        azimuthStepsTaken = expectedAzimuthSteps;
-    }
-
-    nextStep.setSteps(rStep, aStep);
+    nextStep.setSteps(radiusSteps, azimuthSteps);
+    stepped = true;
 }
 
 double SpiralStepper::findDistanceFromPointOnLineToFinish(Point &point)

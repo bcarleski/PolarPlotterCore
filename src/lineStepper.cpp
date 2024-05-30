@@ -27,8 +27,8 @@ bool LineStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &arg
     int comma = arguments.indexOf(',');
     if (comma <= 0) return false;
 
-    double finishX = arguments.substring(0, comma).toFloat();
-    double finishY = arguments.substring(comma + 1).toFloat();
+    double finishX = arguments.substring(0, comma).toDouble();
+    double finishY = arguments.substring(comma + 1).toDouble();
     deltaX = finishX - currentPosition.getX();
     deltaY = finishY - currentPosition.getY();
 

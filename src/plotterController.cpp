@@ -47,10 +47,9 @@ void PlotterController::calibrate(double radiusStepSize, double azimuthStepSize)
   plotter.calibrate(0.0, 0.0, radiusStepSize, azimuthStepSize);
 }
 
-void PlotterController::onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep))
+void PlotterController::onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep))
 {
-  plotter.onStep(stepper);
-  this->stepper = stepper;
+  plotter.onMoveTo(mover);
 }
 
 void PlotterController::onRecalibrate(void recalibrater(const int maxRadiusSteps, const int fullCircleAzimuthSteps))
@@ -160,10 +159,6 @@ void PlotterController::handleControlCommand(String& command) {
         state = lastState;
       }
       break;
-    case 'D':
-    case 'd':
-      setDebug(command);
-      break;
     case 'H':
     case 'h':
       printer.println(PolarPlotter::getHelpMessage());
@@ -180,8 +175,8 @@ void PlotterController::handleControlCommand(String& command) {
 
 void PlotterController::handleCalibrationCommand(String& command) {
   const char chr = command.charAt(0);
-  int azimuthSteps = 0;
-  int radiusSteps = 0;
+  long radiusSteps = 0;
+  long azimuthSteps = 0;
 
   if (chr != '.') {
     printer.print("Got calibration command:");
@@ -249,10 +244,7 @@ void PlotterController::handleCalibrationCommand(String& command) {
     break;
   }
 
-  manualAzimuthSteps += azimuthSteps;
-  manualRadiusSteps += radiusSteps;
-
-  manualStep(chr != '.');
+  manualStep(radiusSteps, azimuthSteps, chr != '.');
 
   if (!isCalibrating()) {
     printer.print("Finished calibration, radiusSteps=");
@@ -279,6 +271,8 @@ void PlotterController::handleManualCommand(String& command) {
     printer.println(command);
   }
 
+  long radiusSteps = 0;
+  long azimuthSteps = 0;
 
   switch (chr)
   {
@@ -301,9 +295,9 @@ void PlotterController::handleManualCommand(String& command) {
     case 'C': // Manual Center
     case 'c':
       if (isCalibrated) {
-        manualRadiusSteps = -1 * round(plotter.getPosition().getRadius() / radiusStepSize);
+        radiusSteps = -1 * round(plotter.getPosition().getRadius() / radiusStepSize);
         printer.print("Manualling moving to center, steps=");
-        printer.println(manualRadiusSteps);
+        printer.println(radiusSteps);
       }
       break;
     case 'X': // Exit
@@ -321,45 +315,32 @@ void PlotterController::handleManualCommand(String& command) {
     case 'O': // Offset
     case 'o':
       if (state == MANUAL_AZIMUTH) {
-        manualAzimuthSteps += command.substring(1).toInt();
+        azimuthSteps = command.substring(1).toInt();
       } else if (state == MANUAL_RADIUS) {
-        manualRadiusSteps += command.substring(1).toInt();
+        radiusSteps = command.substring(1).toInt();
       }
       break;
     default: break;
   }
 
-  manualStep(chr != '.');
+  manualStep(radiusSteps, azimuthSteps, chr != '.');
 }
 
-void PlotterController::manualStep(const bool printStep) {
-  if (manualAzimuthSteps != 0 || manualRadiusSteps != 0) {
-    const int aStep = manualAzimuthSteps > 0 ? 1 : (manualAzimuthSteps < 0 ? -1 : 0);
-    const int rStep = manualRadiusSteps > 0 ? 1 : (manualRadiusSteps < 0 ? -1 : 0);
+void PlotterController::manualStep(const long radiusSteps, const long azimuthSteps, const bool printStep) {
+  if (radiusSteps == 0 && azimuthSteps == 0) return;
 
-    if (printStep) {
-      printer.print("Manual stepping, radiusSteps=");
-      printer.print(manualRadiusSteps);
-      printer.print(", azimuthSteps=");
-      printer.println(manualAzimuthSteps);
-    }
-
-    plotter.executeStep(rStep, aStep, true);
-
-    manualAzimuthSteps -= aStep;
-    manualRadiusSteps -= rStep;
+  if (printStep) {
+    printer.print("Manual stepping, radiusSteps=");
+    printer.print(radiusSteps);
+    printer.print(", azimuthSteps=");
+    printer.println(azimuthSteps);
   }
+
+  plotter.moveTo(radiusSteps, azimuthSteps, true);
 }
 
 bool PlotterController::isManual() {
   return state == MANUAL_RADIUS || state == MANUAL_AZIMUTH;
-}
-
-void PlotterController::setDebug(String& command) {
-  int debug = command.substring(2).toInt();
-  printer.print("Setting debug to ");
-  printer.println(debug);
-  plotter.setDebug(debug);
 }
 
 bool PlotterController::canCycle()

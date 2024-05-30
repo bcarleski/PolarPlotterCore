@@ -47,6 +47,12 @@ bool BaseStepper::hasStep() {
 }
 
 Step &BaseStepper::step() {
+#ifdef __SHOW_STEP_DETAILS__
+    long r = nextStep.getRadiusStep();
+    long a = nextStep.getAzimuthStep();
+
+    std::cout << "    Next Step: (" << r << "," << a << ")" << std::endl;
+#endif
     needNextStep = true;
     return nextStep;
 }
@@ -93,7 +99,7 @@ void BaseStepper::computeNextStep() {
 void BaseStepper::determineNextPositionAndDistance() {
     // If we are at the origin and aren't pointed in the right direction, repoint
     if (currentPosition.getRadius() < (radiusStepSize * 0.1) && abs(originExitAzimuth - currentPosition.getAzimuth()) > (azimuthStepSize * 0.5)) {
-        nextPosition.repoint(currentPosition.getRadius(), currentPosition.getAzimuth() + (azimuthStepSize * (originExitAzimuth > currentPosition.getAzimuth() ? 1 : -1)));
+        nextPosition.repoint(currentPosition.getRadius(), originExitAzimuth);
         nextDistanceToFinish = currentDistanceToFinish;
         return;
     }
@@ -145,20 +151,18 @@ void BaseStepper::setupNextStepFromNextPosition() {
     double currentRadiusMinusMargin = currentPosition.getRadius() - radiusStepSize * 0.1;
     double currentAzimuthPlusMargin = currentPosition.getAzimuth() + azimuthStepSize * 0.1;
     double currentAzimuthMinusMargin = currentPosition.getAzimuth() - azimuthStepSize * 0.1;
-    int radiusStep = 0, azimuthStep = 0;
+    long radiusStep = 0, azimuthStep = 0;
 
-    if (nextPosition.getRadius() > currentRadiusPlusMargin) {
-        radiusStep = 1;
-    } else if (nextPosition.getRadius() < currentRadiusMinusMargin) {
-        radiusStep = -1;
+    if (nextPosition.getRadius() > currentRadiusPlusMargin || nextPosition.getRadius() < currentRadiusMinusMargin) {
+        radiusStep = (long)round((nextPosition.getRadius() - currentPosition.getRadius()) / radiusStepSize);
     }
-    if (nextPosition.getAzimuth() > currentAzimuthPlusMargin) {
-        azimuthStep = 1;
-    } else if (nextPosition.getAzimuth() < currentAzimuthMinusMargin) {
-        azimuthStep = -1;
+    if (nextPosition.getAzimuth() > currentAzimuthPlusMargin || nextPosition.getAzimuth() < currentAzimuthMinusMargin) {
+        azimuthStep = (long)round((nextPosition.getAzimuth() - currentPosition.getAzimuth()) / azimuthStepSize);
     }
 
     nextStep.setSteps(radiusStep, azimuthStep);
+    nextPosition.repoint(currentPosition.getRadius() + radiusStep * radiusStepSize,
+                         currentPosition.getAzimuth() + azimuthStep * azimuthStepSize);
 }
 
 void BaseStepper::setupNextPoints() {

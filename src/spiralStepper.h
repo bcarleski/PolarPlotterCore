@@ -29,16 +29,9 @@
 class SpiralStepper : public BaseStepper
 {
 private:
-    double radiusStepFrequency;
-    double azimuthStepFrequency;
-    int radiusStepsTaken;
-    int azimuthStepsTaken;
-    int radiusStep;
-    int azimuthStep;
-    int radiusSteps;
-    int azimuthSteps;
-    int maxSteps;
-    int currentStep;
+    long radiusSteps;
+    long azimuthSteps;
+    bool stepped;
 
 protected:
     bool parseArgumentsAndSetFinish(Point &currentPosition, String &arguments);

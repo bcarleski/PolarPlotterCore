@@ -43,8 +43,7 @@ private:
   AbstractStepper *currentStepper;
   Step emptyStep;
 
-  void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
-  unsigned int debugLevel;
+  void (*mover)(const long radiusSteps, const long azimuthSteps, const bool fastStep);
   Point position;
   int currentStep;
   double maxRadius;
@@ -52,20 +51,19 @@ private:
   double azimuthStepSize;
   int marbleSizeInRadiusSteps;
 
-  void printStep(const int radiusStep, const int azimuthStep, const bool fastStep, StatusUpdate* statusUpdater, ExtendedPrinter printer);
+  void printStep(const long radiusStep, const long azimuthStep, const bool fastStep, StatusUpdate* statusUpdater, ExtendedPrinter printer);
   void updatePosition(const double newRadius, const double newAzimuth, Point &position, StatusUpdate* statusUpdater);
 
 public:
   PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps);
-  void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
+  void onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep));
   void calibrate(double initialRadius, double initialAzimuth, double radiusStepSize, double azimuthStepSize);
   void startCommand(String &command);
   bool hasNextStep();
   void clearStepper();
   void step();
-  void executeStep(const int radiusSteps, const int azimuthSteps, const bool fastStep);
+  void moveTo(const long radiusSteps, const long azimuthSteps, const bool fastStep);
   Point getPosition() const;
-  void setDebug(unsigned int level);
   static String getHelpMessage();
 };
 

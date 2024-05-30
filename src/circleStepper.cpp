@@ -28,9 +28,9 @@ bool CircleStepper::parseArgumentsAndSetFinish(Point &currentPosition, String &a
     int secondComma = arguments.indexOf(',', firstComma + 1);
     if (secondComma <= 2) return false;
 
-    double centerX = arguments.substring(0, firstComma).toFloat();
-    double centerY = arguments.substring(firstComma + 1, secondComma).toFloat();
-    double thetaDegrees = arguments.substring(secondComma + 1).toFloat();
+    double centerX = arguments.substring(0, firstComma).toDouble();
+    double centerY = arguments.substring(firstComma + 1, secondComma).toDouble();
+    double thetaDegrees = arguments.substring(secondComma + 1).toDouble();
     double theta = thetaDegrees / 180 * PI;
     center.cartesianRepoint(centerX, centerY);
     this->orientPoint(currentPosition, center);
@@ -98,5 +98,5 @@ void CircleStepper::setClosestPointOnLine(Point &point, Point &closestPoint)
 
 double CircleStepper::determineStartingAzimuthFromCenter()
 {
-    return start.getAzimuth() + (PI / 2);
+    return round((start.getAzimuth() + (PI / 2)) / azimuthStepSize) * azimuthStepSize;
 }

@@ -47,7 +47,6 @@ private:
   Print &printer;
   StatusUpdate &statusUpdater;
   PolarPlotter plotter;
-  void (*stepper)(const int radiusSteps, const int azimuthSteps, const bool fastStep);
   void (*recalibrater)(const int maxRadiusSteps, const int fullCircleAzimuthSteps);
   String drawing;
   String commands[MAX_COMMAND_COUNT];
@@ -55,8 +54,6 @@ private:
   int commandIndex;
   int calibrationRadiusSteps;
   int calibrationAzimuthSteps;
-  int manualRadiusSteps;
-  int manualAzimuthSteps;
   double radiusStepSize;
   bool isCalibrated;
   PlotterState state;
@@ -66,17 +63,16 @@ private:
   bool needsCommands();
   bool isCalibrating();
   bool isManual();
-  void manualStep(const bool printStep);
+  void manualStep(const long radiusSteps, const long azimuthSteps, const bool printStep);
   void executeCommand(String& command);
   void handleControlCommand(String& command);
   void handleCalibrationCommand(String& command);
   void handleManualCommand(String& command);
-  void setDebug(String& command);
 
 public:
   PlotterController(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps);
   void calibrate(double radiusStepSize, double azimuthStepSize);
-  void onStep(void stepper(const int radiusSteps, const int azimuthSteps, const bool fastStep));
+  void onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep));
   void onRecalibrate(void recalibrater(const int maxRadiusSteps, const int fullCircleAzimuthSteps));
   void performCycle();
   bool canCycle();

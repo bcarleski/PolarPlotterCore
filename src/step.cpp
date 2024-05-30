@@ -21,78 +21,37 @@
     SOFTWARE.
 */
 
-#define RADIUS_STEP_POSITIVE 0x8
-#define RADIUS_STEP_NEGATIVE 0x4
-#define AZIMUTH_STEP_POSITIVE 0x2
-#define AZIMUTH_STEP_NEGATIVE 0x1
 #include "step.h"
 
 Step::Step()
 {
-  state = 0;
+  radiusSteps = 0;
+  azimuthSteps = 0;
 }
 
 void Step::setSteps(Step &other)
 {
-  state = other.state;
+  radiusSteps = other.radiusSteps;
+  azimuthSteps = other.azimuthSteps;
 }
 
-void Step::setSteps(int radiusStep, int azimuthStep)
+void Step::setSteps(long radiusStep, long azimuthStep)
 {
-  unsigned char state = 0;
-
-  if (radiusStep > 0)
-  {
-    state |= RADIUS_STEP_POSITIVE;
-  }
-  else if (radiusStep < 0)
-  {
-    state |= RADIUS_STEP_NEGATIVE;
-  }
-
-  if (azimuthStep > 0)
-  {
-    state |= AZIMUTH_STEP_POSITIVE;
-  }
-  else if (azimuthStep < 0)
-  {
-    state |= AZIMUTH_STEP_NEGATIVE;
-  }
-
-  this->state = state;
+  radiusSteps = radiusStep;
+  azimuthSteps = azimuthStep;
 }
 
-int Step::getRadiusStep() const
+long Step::getRadiusStep() const
 {
-  if (state & RADIUS_STEP_POSITIVE)
-  {
-    return 1;
-  }
-
-  if (state & RADIUS_STEP_NEGATIVE)
-  {
-    return -1;
-  }
-
-  return 0;
+  return radiusSteps;
 }
 
-int Step::getAzimuthStep() const
+long Step::getAzimuthStep() const
 {
-  if (state & AZIMUTH_STEP_POSITIVE)
-  {
-    return 1;
-  }
-
-  if (state & AZIMUTH_STEP_NEGATIVE)
-  {
-    return -1;
-  }
-
-  return 0;
+  return azimuthSteps;
 }
 
 bool Step::hasStep() const
 {
-  return state != 0;
+  return radiusSteps != 0 || azimuthSteps != 0;
 }

@@ -11,7 +11,6 @@
 #define MARBLE_SIZE_IN_RADIUS_STEPS 650
 #define MAX_RADIUS_STEPS 10500
 #define FULL_CIRCLE_AZIMUTH_STEPS 4810
-//#define __SHOW_STEP_DETAILS__
 
 const double maxRadius = MAX_RADIUS;
 const double radiusStepSize = maxRadius / MAX_RADIUS_STEPS;

@@ -43,16 +43,9 @@ private:
     double maxRadius;
     WipeState state;
 
-    int fullCircleAzimuthSteps;
-    int stepsToEdge;
-    int edgeToCenterRadiusSteps;
-    int spiralInAzimuthSteps;
-    double spiralInAzimuthStepsPerRadiusStep;
-
-    int currentStepToEdge;
-    int currentFullCircleStep;
-    int currentSpiralInAzimuthStep;
-    int currentSpiralInRadiusStep;
+    long fullCircleAzimuthSteps;
+    long stepsToEdge;
+    long spiralInAzimuthSteps;
 
     Step currentStep;
 

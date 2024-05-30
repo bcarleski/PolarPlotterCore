@@ -66,10 +66,10 @@ String String::substring( unsigned int beginIndex, unsigned int endIndex ) const
 	return newString;
 }
 
-double String::toFloat() const {
+double String::toDouble() const {
     return atof(cstr);
 }
 
-int String::toInt() const {
+long String::toInt() const {
     return atoi(cstr);
 }
