@@ -196,6 +196,8 @@ bool PolarMotorCoordinator::setupMove(const long nextRadiusSteps, const long nex
 
     radius->setupMove(nextRadiusSteps, currentMicros, radiusStepTimeDelta);
     azimuth->setupMove(nextAzimuthSteps, currentMicros, azimuthStepTimeDelta);
+
+    return true;
 }
 
 unsigned long PolarMotorCoordinator::getStepInterval()

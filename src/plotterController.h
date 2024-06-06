@@ -61,7 +61,7 @@ private:
   bool isCalibrated;
   PlotterState state;
   PlotterState lastState;
-  char* lastTextState;
+  String lastTextState;
 
   bool needsCommands();
   bool isCalibrating();
