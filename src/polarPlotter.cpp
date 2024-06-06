@@ -27,7 +27,7 @@
 #include <iomanip>
 #endif
 
-PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps)
+PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps, PolarMotorCoordinator* coordinator)
     : printer(ExtendedPrinter(printer)),
       statusUpdater(statusUpdater),
       maxRadius(maxRadius),
@@ -36,13 +36,9 @@ PolarPlotter::PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double m
       circleStepper(CircleStepper()),
       spiralStepper(SpiralStepper()),
       wipeStepper(WipeStepper(maxRadius)),
-      currentStepper(NULL)
+      currentStepper(NULL),
+      coordinator(coordinator)
 {
-}
-
-void PolarPlotter::onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep))
-{
-  this->mover = mover;
 }
 
 void PolarPlotter::calibrate(double startingRadius, double startingAzimuth, double radiusStepSize, double azimuthStepSize)
@@ -99,7 +95,7 @@ void PolarPlotter::startCommand(String &command)
 
 bool PolarPlotter::hasNextStep()
 {
-  return currentStepper != NULL && currentStepper->hasStep();
+  return pendingStep.hasStep() || (currentStepper != NULL && currentStepper->hasStep());
 }
 
 void PolarPlotter::clearStepper()
@@ -109,6 +105,11 @@ void PolarPlotter::clearStepper()
 
 void PolarPlotter::step()
 {
+  if (pendingStep.hasStep()) {
+    if (!coordinator->canAddSteps()) return;
+    coordinator->addSteps(pendingStep.getRadiusStep(), pendingStep.getAzimuthStep(), pendingStep.isFast());
+    pendingStep.setSteps(0, 0);
+  }
   if (!hasNextStep()) {
     return;
   }
@@ -144,9 +145,13 @@ void PolarPlotter::moveTo(const long radiusSteps, const long azimuthSteps, const
     std::cout << "STEP: " << radiusStep << "," << azimuthStep << std::endl;
 #endif
 
-  if ((radiusStep != 0 || azimuthStep != 0) && mover)
+  if ((radiusStep != 0 || azimuthStep != 0) && coordinator)
   {
-    mover(radiusStep, azimuthStep, fastStep);
+    if (coordinator->canAddSteps()) {
+      coordinator->addSteps(radiusStep, azimuthStep, fastStep);
+    } else {
+      pendingStep.setStepsWithSpeed(radiusStep, azimuthStep, fastStep);
+    }
   }
 
   updatePosition(newRadius, newAzimuth, position, &statusUpdater);

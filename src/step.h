@@ -29,13 +29,16 @@ class Step
 private:
   long radiusSteps;
   long azimuthSteps;
+  bool fast;
 
 public:
   Step();
   void setSteps(long radiusStep, long azimuthStep);
+  void setStepsWithSpeed(long radiusStep, long azimuthStep, bool fast);
   void setSteps(Step &other);
   long getRadiusStep() const;
   long getAzimuthStep() const;
+  bool isFast() const;
   bool hasStep() const;
 };
 

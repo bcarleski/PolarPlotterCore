@@ -26,6 +26,7 @@
 
 #define MAX_COMMAND_COUNT 1024
 #include "polarPlotter.h"
+#include "polarMotorCoordinator.h"
 
 #define TOPIC_SUBSCRIPTION_COUNT 3
 
@@ -38,7 +39,9 @@ enum PlotterState {
   MANUAL_AZIMUTH,
   CALIBRATING_ORIGIN,
   CALIBRATING_RADIUS,
-  CALIBRATING_AZIMUTH
+  CALIBRATING_AZIMUTH,
+  FINISHING_CALIBRATION,
+  FINISHING_MOVING
 };
 
 class PlotterController
@@ -46,6 +49,7 @@ class PlotterController
 private:
   Print &printer;
   StatusUpdate &statusUpdater;
+  PolarMotorCoordinator* coordinator;
   PolarPlotter plotter;
   void (*recalibrater)(const int maxRadiusSteps, const int fullCircleAzimuthSteps);
   String drawing;
@@ -70,7 +74,7 @@ private:
   void handleManualCommand(String& command);
 
 public:
-  PlotterController(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps);
+  PlotterController(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps, PolarMotorCoordinator* coordinator);
   void calibrate(double radiusStepSize, double azimuthStepSize);
   void onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep));
   void onRecalibrate(void recalibrater(const int maxRadiusSteps, const int fullCircleAzimuthSteps));

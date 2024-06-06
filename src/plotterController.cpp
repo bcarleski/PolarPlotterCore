@@ -23,13 +23,14 @@
 
 #include "plotterController.h"
 
-PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps)
+PlotterController::PlotterController(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps, PolarMotorCoordinator* coordinator)
     : printer(printer),
       statusUpdater(statusUpdater),
-      plotter(PolarPlotter(printer, statusUpdater, maxRadius, marbleSizeInRadiusSteps)),
+      plotter(PolarPlotter(printer, statusUpdater, maxRadius, marbleSizeInRadiusSteps, coordinator)),
       state(INITIALIZING),
       lastState(INITIALIZING),
-      lastTextState("Initializing")
+      lastTextState("Initializing"),
+      coordinator(coordinator)
 {
 }
 
@@ -74,6 +75,8 @@ void PlotterController::performCycle()
         this->handleCalibrationCommand(defaultCommand);
       } else if (manual) {
         this->handleManualCommand(defaultCommand);
+      } else if (coordinator && coordinator->isMoving()) {
+        state = FINISHING_MOVING;
       } else if (state != RETRIEVING) {
         printer.println("Controller needs commands");
         lastTextState = "Retrieving Commands";
@@ -144,6 +147,7 @@ void PlotterController::handleControlCommand(String& command) {
       break;
     case 'P':
     case 'p':
+      if (coordinator) coordinator->pause();
       if (state == DRAWING || state == RETRIEVING) {
         printer.println("Pausing");
         statusUpdater.setState("Paused");
@@ -153,6 +157,7 @@ void PlotterController::handleControlCommand(String& command) {
       break;
     case 'R':
     case 'r':
+      if (coordinator) coordinator->resume();
       if (state == PAUSED) {
         printer.println("Resuming");
         statusUpdater.setState(lastTextState);
@@ -199,7 +204,8 @@ void PlotterController::handleCalibrationCommand(String& command) {
             printer.print(calibrationRadiusSteps);
             printer.print(", calibrationAzimuthSteps=");
             printer.println(calibrationAzimuthSteps);
-            state = lastState;
+            printer.println("Waiting for calibration moves to finish");
+            state = FINISHING_CALIBRATION;
           }
           break;
         case 'A': // Accept
@@ -230,9 +236,8 @@ void PlotterController::handleCalibrationCommand(String& command) {
       {
         case 'A': // Accept
         case 'a':
-          printer.println("Finished azimuth calibration, ending calibration");
-          statusUpdater.setState(lastTextState);
-          state = lastState;
+          printer.println("Waiting for calibration moves to finish");
+          state = FINISHING_CALIBRATION;
           radiusSteps = -1 * calibrationRadiusSteps;
           break;
         case 'O': // Offset
@@ -242,24 +247,28 @@ void PlotterController::handleCalibrationCommand(String& command) {
       }
       calibrationAzimuthSteps += azimuthSteps;
     break;
+    case FINISHING_CALIBRATION:
+      if (coordinator && !coordinator->isMoving()) {
+        statusUpdater.setState(lastTextState);
+        state = lastState;
+        printer.print("Finished calibration, radiusSteps=");
+        printer.print(calibrationRadiusSteps);
+        printer.print(", azimuthSteps=");
+        printer.println(calibrationAzimuthSteps);
+
+        coordinator->declareOrigin();
+        if (recalibrater) {
+          recalibrater(calibrationRadiusSteps, calibrationAzimuthSteps);
+        }
+      }
+    return;
   }
 
   manualStep(radiusSteps, azimuthSteps, chr != '.');
-
-  if (!isCalibrating()) {
-    printer.print("Finished calibration, radiusSteps=");
-    printer.print(calibrationRadiusSteps);
-    printer.print(", azimuthSteps=");
-    printer.println(calibrationAzimuthSteps);
-
-    if (recalibrater) {
-      recalibrater(calibrationRadiusSteps, calibrationAzimuthSteps);
-    }
-  }
 }
 
 bool PlotterController::isCalibrating() {
-  return state == CALIBRATING_ORIGIN || state == CALIBRATING_RADIUS || state == CALIBRATING_AZIMUTH;
+  return state == CALIBRATING_ORIGIN || state == CALIBRATING_RADIUS || state == CALIBRATING_AZIMUTH || state == FINISHING_CALIBRATION;
 }
 
 void PlotterController::handleManualCommand(String& command) {
@@ -345,7 +354,7 @@ bool PlotterController::isManual() {
 
 bool PlotterController::canCycle()
 {
-  return state == PAUSED || isCalibrating() || isManual() || plotter.hasNextStep() || !this->needsCommands();
+  return state == PAUSED || state == FINISHING_MOVING || isCalibrating() || isManual() || plotter.hasNextStep() || !this->needsCommands();
 }
 
 bool PlotterController::needsCommands()

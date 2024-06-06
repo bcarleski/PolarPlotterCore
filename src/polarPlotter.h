@@ -42,8 +42,9 @@ private:
   WipeStepper wipeStepper;
   AbstractStepper *currentStepper;
   Step emptyStep;
+  Step pendingStep;
 
-  void (*mover)(const long radiusSteps, const long azimuthSteps, const bool fastStep);
+  PolarMotorCoordinator* coordinator;
   Point position;
   int currentStep;
   double maxRadius;
@@ -55,7 +56,7 @@ private:
   void updatePosition(const double newRadius, const double newAzimuth, Point &position, StatusUpdate* statusUpdater);
 
 public:
-  PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps);
+  PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps, PolarMotorCoordinator* coordinator);
   void onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep));
   void calibrate(double initialRadius, double initialAzimuth, double radiusStepSize, double azimuthStepSize);
   void startCommand(String &command);
