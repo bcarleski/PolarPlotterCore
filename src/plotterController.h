@@ -26,7 +26,6 @@
 
 #define MAX_COMMAND_COUNT 1024
 #include "polarPlotter.h"
-#include "polarMotorCoordinator.h"
 
 #define TOPIC_SUBSCRIPTION_COUNT 3
 
@@ -76,7 +75,6 @@ private:
 public:
   PlotterController(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps, PolarMotorCoordinator* coordinator);
   void calibrate(double radiusStepSize, double azimuthStepSize);
-  void onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep));
   void onRecalibrate(void recalibrater(const int maxRadiusSteps, const int fullCircleAzimuthSteps));
   void performCycle();
   bool canCycle();

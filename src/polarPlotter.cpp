@@ -79,6 +79,7 @@ void PolarPlotter::startCommand(String &command)
     break;
   case 'w':
   case 'W':
+    if (coordinator) coordinator->reset();
     currentStepper = &wipeStepper;
     break;
   }

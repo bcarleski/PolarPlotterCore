@@ -48,11 +48,6 @@ void PlotterController::calibrate(double radiusStepSize, double azimuthStepSize)
   plotter.calibrate(0.0, 0.0, radiusStepSize, azimuthStepSize);
 }
 
-void PlotterController::onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep))
-{
-  plotter.onMoveTo(mover);
-}
-
 void PlotterController::onRecalibrate(void recalibrater(const int maxRadiusSteps, const int fullCircleAzimuthSteps))
 {
   this->recalibrater = recalibrater;
@@ -127,9 +122,10 @@ void PlotterController::executeCommand(String& command) {
 
 void PlotterController::handleControlCommand(String& command) {
   const char chr2 = command.charAt(1);
+  String msg = "";
+
   switch (chr2) {
-    case 'C':
-    case 'c':
+    case 'C': case 'c':
       printer.println("Starting calibration");
       statusUpdater.setState("Calibrating Center");
 
@@ -138,15 +134,13 @@ void PlotterController::handleControlCommand(String& command) {
       lastState = state;
       state = CALIBRATING_ORIGIN;
       break;
-    case 'M':
-    case 'm':
+    case 'M': case 'm':
       printer.println("Starting manual commands in radius mode");
       statusUpdater.setState("Manual Radius");
       lastState = state;
       state = MANUAL_RADIUS;
       break;
-    case 'P':
-    case 'p':
+    case 'P': case 'p':
       if (coordinator) coordinator->pause();
       if (state == DRAWING || state == RETRIEVING) {
         printer.println("Pausing");
@@ -155,8 +149,7 @@ void PlotterController::handleControlCommand(String& command) {
         state = PAUSED;
       }
       break;
-    case 'R':
-    case 'r':
+    case 'R': case 'r':
       if (coordinator) coordinator->resume();
       if (state == PAUSED) {
         printer.println("Resuming");
@@ -164,12 +157,36 @@ void PlotterController::handleControlCommand(String& command) {
         state = lastState;
       }
       break;
-    case 'H':
-    case 'h':
+    case 'S': case 's':
+      msg = "JSON={";
+      if (coordinator) {
+        msg += "\"Coordinator\":{\"Mov\":" + coordinator->isMoving();
+        msg += ",\"Int\":" + coordinator->getStepInterval();
+
+        Step stp = coordinator->getCurrentPosition();
+        msg += ",\"Pos\":{\"R\":" + stp.getRadiusStep(); msg += ",\"A\":" + stp.getAzimuthStep(); msg += ",\"F\":" + stp.isFast(); msg += "}";
+
+        stp = coordinator->getCurrentProgress();
+        msg += ",\"Prg\":{\"R\":" + stp.getRadiusStep(); msg += ",\"A\":" + stp.getAzimuthStep(); msg += ",\"F\":" + stp.isFast(); msg += "}";
+
+        stp = coordinator->getCurrentStep();
+        msg += ",\"Stp\":{\"R\":" + stp.getRadiusStep(); msg += ",\"A\":" + stp.getAzimuthStep(); msg += ",\"F\":" + stp.isFast(); msg += "}";
+      }
+
+      msg += ",\"State\":" + state;
+      msg += ",\"Drawing\":\"" + drawing;
+      msg += "\",\"CommandCount\":" + commandCount;
+      msg += ",\"CommandIndex\":" + commandIndex;
+      msg += ",\"CalibrationRadiusSteps\":" + calibrationRadiusSteps;
+      msg += ",\"CalibrationAzimuthSteps\":" + calibrationAzimuthSteps;
+      msg += "}";
+      statusUpdater.status(msg);
+      printer.println(msg);
+      break;
+    case 'H': case 'h':
       printer.println(PolarPlotter::getHelpMessage());
       break;
-    case 'W':
-    case 'w':
+    case 'W': case 'w':
       commandIndex = 0;
       commandCount = 0;
       String cmd = "W";

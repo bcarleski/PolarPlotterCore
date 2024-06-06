@@ -36,12 +36,18 @@ void Step::setSteps(Step &other)
   fast = other.fast;
 }
 
-void Step::setSteps(long radiusStep, long azimuthStep, bool fast)
+void Step::setSteps(long radiusStep, long azimuthStep)
+{
+  this->radiusSteps = radiusStep;
+  this->azimuthSteps = azimuthStep;
+  this->fast = false;
+}
+
+void Step::setStepsWithSpeed(long radiusStep, long azimuthStep, bool fast)
 {
   this->radiusSteps = radiusStep;
   this->azimuthSteps = azimuthStep;
   this->fast = fast;
-
 }
 
 long Step::getRadiusStep() const

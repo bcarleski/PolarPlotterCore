@@ -30,6 +30,7 @@
 #include "wipeStepper.h"
 #include "extendedPrinter.h"
 #include "statusUpdate.h"
+#include "polarMotorCoordinator.h"
 
 class PolarPlotter
 {
@@ -57,7 +58,6 @@ private:
 
 public:
   PolarPlotter(Print &printer, StatusUpdate &statusUpdater, double maxRadius, int marbleSizeInRadiusSteps, PolarMotorCoordinator* coordinator);
-  void onMoveTo(void mover(const long radiusSteps, const long azimuthSteps, const bool fastStep));
   void calibrate(double initialRadius, double initialAzimuth, double radiusStepSize, double azimuthStepSize);
   void startCommand(String &command);
   bool hasNextStep();

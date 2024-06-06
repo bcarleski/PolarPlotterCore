@@ -25,6 +25,7 @@
 #define _POLARPLOTTERCORE_POLARMOTORCOORDINATOR_H_
 
 #include "stepDirMotor.h"
+#include "step.h"
 
 #define MAX_PENDING_STEPS 100
 
@@ -57,8 +58,8 @@ protected:
     bool prepareMove();
     void recalculateMove();
     bool hasSteps();
-    bool setCurrentStep(const int nextRadiusSteps, const int nextAzimuthSteps, const bool fastStep);
-    bool setupMove(const int nextRadiusSteps, const int nextAzimuthSteps, const bool fastStep);
+    bool setCurrentStep(const long nextRadiusSteps, const long nextAzimuthSteps, const bool fastStep);
+    bool setupMove(const long nextRadiusSteps, const long nextAzimuthSteps, const bool fastStep);
 
 public:
     /**
@@ -94,7 +95,7 @@ public:
     virtual void changeStepInterval(const unsigned long interval);
 
     /** Adds steps to the current pending queue of steps to run.  Fast steps run using the current step interval.  Slow steps run at the current interval multiplied by the slow speed interval multiplier. */
-    virtual void addSteps(const int radiusStep, const int azimuthStep, const bool fastStep);
+    virtual void addSteps(const long radiusStep, const long azimuthStep, const bool fastStep);
 
     /** Declares the current point (after any pending moves complete) as the (0, 0) origin. */
     virtual void declareOrigin();

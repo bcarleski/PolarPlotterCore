@@ -166,11 +166,12 @@ void PolarMotorCoordinator::recalculateMove()
     if (!moving)
         return;
 
-    int nextRadiusSteps = radiusSteps[movingIndex] - radius->getCurrentStep();
-    int nextAzimuthSteps = azimuthSteps[movingIndex] - azimuth->getCurrentStep();
-    bool fastStep = fastSteps[movingIndex];
+    Step nextStep = steps[movingIndex];
+    long nextRadiusSteps = nextStep.getRadiusStep() - radius->getCurrentStep();
+    long nextAzimuthSteps = nextStep.getAzimuthStep() - azimuth->getCurrentStep();
+    bool fastStep = nextStep.isFast();
 
-    return setCurrentStep(nextRadiusSteps, nextAzimuthSteps, fastStep);
+    setCurrentStep(nextRadiusSteps, nextAzimuthSteps, fastStep);
 }
 
 bool PolarMotorCoordinator::setCurrentStep(const long nextRadiusSteps, const long nextAzimuthSteps, const bool fastStep)
@@ -181,9 +182,9 @@ bool PolarMotorCoordinator::setCurrentStep(const long nextRadiusSteps, const lon
 
 bool PolarMotorCoordinator::setupMove(const long nextRadiusSteps, const long nextAzimuthSteps, const bool fastStep)
 {
-    int rSteps = abs(nextRadiusSteps);
-    int aSteps = abs(nextAzimuthSteps);
-    int maxSteps = rSteps > aSteps ? rSteps : aSteps;
+    long rSteps = abs(nextRadiusSteps);
+    long aSteps = abs(nextAzimuthSteps);
+    long maxSteps = rSteps > aSteps ? rSteps : aSteps;
 
     if (maxSteps == 0)
         return false;
@@ -204,7 +205,7 @@ unsigned long PolarMotorCoordinator::getStepInterval()
 
 Step PolarMotorCoordinator::getCurrentPosition()
 {
-    currentPosition.setStepsWithSpeed(radius->getPosition(), azimuth->getPosition(), true)
+    currentPosition.setStepsWithSpeed(radius->getPosition(), azimuth->getPosition(), true);
     return currentPosition;
 }
 
