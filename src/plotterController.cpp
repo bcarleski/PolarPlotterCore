@@ -160,25 +160,26 @@ void PlotterController::handleControlCommand(String& command) {
     case 'S': case 's':
       msg = "JSON={";
       if (coordinator) {
-        msg += "\"Coordinator\":{\"Mov\":" + coordinator->isMoving();
-        msg += ",\"Int\":" + coordinator->getStepInterval();
+        msg += "\"Coordinator\":{\"Mov\":"; msg += coordinator->isMoving();
+        msg += ",\"Int\":"; msg += coordinator->getStepInterval();
 
         Step stp = coordinator->getCurrentPosition();
-        msg += ",\"Pos\":{\"R\":" + stp.getRadiusStep(); msg += ",\"A\":" + stp.getAzimuthStep(); msg += ",\"F\":" + stp.isFast(); msg += "}";
+        msg += ",\"Pos\":{\"R\":"; msg += stp.getRadiusStep(); msg += ",\"A\":"; msg += stp.getAzimuthStep(); msg += ",\"F\":"; msg += stp.isFast(); msg += "}";
 
         stp = coordinator->getCurrentProgress();
-        msg += ",\"Prg\":{\"R\":" + stp.getRadiusStep(); msg += ",\"A\":" + stp.getAzimuthStep(); msg += ",\"F\":" + stp.isFast(); msg += "}";
+        msg += ",\"Prg\":{\"R\":"; msg += stp.getRadiusStep(); msg += ",\"A\":"; msg += stp.getAzimuthStep(); msg += ",\"F\":"; msg += stp.isFast(); msg += "}";
 
         stp = coordinator->getCurrentStep();
-        msg += ",\"Stp\":{\"R\":" + stp.getRadiusStep(); msg += ",\"A\":" + stp.getAzimuthStep(); msg += ",\"F\":" + stp.isFast(); msg += "}";
+        msg += ",\"Stp\":{\"R\":"; msg += stp.getRadiusStep(); msg += ",\"A\":"; msg += stp.getAzimuthStep(); msg += ",\"F\":"; msg += stp.isFast(); msg += "}";
       }
 
-      msg += ",\"State\":" + state;
-      msg += ",\"Drawing\":\"" + drawing;
-      msg += "\",\"CommandCount\":" + commandCount;
-      msg += ",\"CommandIndex\":" + commandIndex;
-      msg += ",\"CalibrationRadiusSteps\":" + calibrationRadiusSteps;
-      msg += ",\"CalibrationAzimuthSteps\":" + calibrationAzimuthSteps;
+      msg += ",\"State\":"; msg += state;
+      msg += ",\"LastState\":\""; msg += lastTextState;
+      msg += "\",\"Drawing\":\""; msg += drawing;
+      msg += "\",\"CommandCount\":"; msg += commandCount;
+      msg += ",\"CommandIndex\":"; msg += commandIndex;
+      msg += ",\"CalibrationRadiusSteps\":"; msg += calibrationRadiusSteps;
+      msg += ",\"CalibrationAzimuthSteps\":"; msg += calibrationAzimuthSteps;
       msg += "}";
       statusUpdater.status(msg);
       printer.println(msg);
