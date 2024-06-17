@@ -8,6 +8,7 @@ typedef unsigned char byte;
 
 unsigned long millis();
 void delay(unsigned long ms);
+void sleep_us(unsigned long micros);
 
 void initialize_mock_arduino(); 
 

@@ -26,6 +26,7 @@
 
 #ifndef __IN_TEST__
 #include <Arduino.h>
+#include "pico/time.h"
 #else
 #include "mockArduino.h"
 #endif
@@ -44,21 +45,13 @@ protected:
     unsigned long nextStepTime;
     unsigned long nextStepTimeDelta;
 
-    void (*delayMicros)(const unsigned long micros);
-
     virtual void initDriver() { }
     virtual void beginDriver() { }
 
 public:
-    StepDirMotor(const int _stepPin, const int _dirPin, void _delayMicros(const unsigned long micros))
+    StepDirMotor(const int _stepPin, const int _dirPin)
         : stepPin(_stepPin),
-          dirPin(_dirPin),
-          delayMicros(_delayMicros) { }
-
-    virtual void onDelayMicros(void delayMicros(const unsigned long micros))
-    {
-        this->delayMicros = delayMicros;
-    }
+          dirPin(_dirPin) { }
 
     virtual void init()
     {
@@ -85,7 +78,7 @@ public:
         {
             reversed = steps < 0;
             digitalWrite(dirPin, reversed ? HIGH : LOW);
-            if (delayMicros) delayMicros(20);
+            sleep_us(20);
         }
     }
 
@@ -104,7 +97,7 @@ public:
         position += (reversed ? -1 : 1);
 
         digitalWrite(stepPin, HIGH);
-        if (delayMicros) delayMicros(2);
+        sleep_us(20);
         digitalWrite(stepPin, LOW);
     }
 
